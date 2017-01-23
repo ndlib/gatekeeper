@@ -48,7 +48,13 @@ class Illiad(RequestType):
     }
 
     response = self._makeReq(url, headers)
-    return self._format(json.loads(response))
+    try:
+      loaded = json.loads(response)
+    except ValueError:
+      print "Response doesn't contain json %s" % response
+      return []
+
+    return self._format(loaded)
 
 
   def illiad_checked_out(self):

@@ -1,6 +1,8 @@
 import json
 from requests.requester import Requester
 
+# need to figure out what is secret in aleph + how to handle secrets in lambda
+
 def loanedItems(event, context):
   # print event
   netid = "rfox2"
