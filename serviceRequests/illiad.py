@@ -9,30 +9,30 @@ class Illiad(RequestType):
     self.name = "Illiad"
     self.url = "https://nd.illiad.oclc.org/ILLiadWebPlatform/Transaction/UserRequests/"
 
-    self._setCallback('checked_out', self.illiad_checked_out)
-    self._setCallback('web', self.illiad_web)
-    self._setCallback('pending', self.illiad_pending)
+    self._setCallback('checkedOut', self.checkedOut)
+    self._setCallback('web', self.web)
+    self._setCallback('pending', self.pending)
 
 
   def _makeIlliadItem(self, data):
     return {
       "title": data.get("LoanTitle", None),
       "journalTitle": data.get("PhotoJournalTitle", None),
-      "journalVolume": data.get("PhotoJournalVolume", None),
-      "journalIssue": data.get("PhotoJournalIssue", None),
-      "journalMonth": data.get("PhotoJournalMonth", None),
+      "journalVolume": data.get("PhotoJournalVolume", None), # can hide
+      "journalIssue": data.get("PhotoJournalIssue", None), #
+      "journalMonth": data.get("PhotoJournalMonth", None), #
       "journalYear": data.get("PhotoJournalYear", None),
       "articleAuthor": data.get("PhotoArticleAuthor", None),
       "articleTitle": data.get("PhotoArticleTitle", None),
       "author": data.get("LoanAuthor", None),
       "publishedDate": data.get("LoanDate", None),
-      "requestType": data.get("RequestType", None),
+      "requestType": data.get("RequestType", None), #probably doesn't need to display - loan/photocopy
       "dueDate": data.get("DueDate", None),
-      "illNumber": data.get("ILLNumber", None),
       "transactionNumber": data.get("TransactionNumber", None),
-      "transactionStatus": data.get("TransactionStatus", None),
-      "transactionDate": data.get("TransactionDate", None),
+      "transactionStatus": data.get("TransactionStatus", None), # only in pending
       "pages": data.get("Pages", None),
+      # pickup location -- in patron record
+      # artickles need link to scanned copy
     }
 
 
@@ -57,16 +57,16 @@ class Illiad(RequestType):
     return self._format(loaded)
 
 
-  def illiad_checked_out(self):
+  def checkedOut(self):
     path = "<<netid>>?$filter=(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"
     return self._illiad(path)
 
 
-  def illiad_web(self):
+  def web(self):
     path = "<<netid>>?$filter=(TransactionStatus%20eq%20%27Delivered%20to%20Web%27)"
     return self._illiad(path)
 
 
-  def illiad_pending(self):
+  def pending(self):
     path = "<<netid>>?$filter=(TransactionStatus%20ne%20%27Request%20Finished%27)%20and%20not%20startswith(TransactionStatus,%20%27Cancel%27)%20and%20not%20(TransactionStatus%20eq%20%27Delivered%20to%20Web%27)%20and%20not%20(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"
     return self._illiad(path)

@@ -61,17 +61,45 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  loanedItems:
-    handler: handler.loanedItems
+  borrowed:
+    handler: joinHandler.borrowed
     events:
       - http:
-          path: items/loaned
+          path: items/borrowed
           method: get
-          integration: lambda
-          request:
-              parameters:
-                  paths:
-                    netid: true
+
+  pending:
+    handler: joinHandler.pending
+    events:
+      - http:
+          path: items/pending
+          method: get
+
+  aleph:
+    handler: serviceHandler.aleph
+    vpc:
+      securityGroupIds:
+        - sg-bd3e9cc1
+        - sg-2e15b752
+      subnetIds:
+        - subnet-fee3a4d3
+    events:
+      - http:
+          path: items/borrowed/aleph
+          method: get
+      - http:
+          path: items/pending/aleph
+          method: get
+
+  illiad:
+    handler: serviceHandler.illiad
+    events:
+      - http:
+          path: items/borrowed/illiad
+          method: get
+      - http:
+          path: items/pending/illiad
+          method: get
 
 
 #    The following are a few example events you can configure

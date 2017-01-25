@@ -7,14 +7,19 @@ class RequestType(object):
     self.name = "Empty"
 
     self.callbacks = {
-      'checked_out': self._default,
-      'web': self._default,
-      'pending': self._default,
+      'checkedOut': self._defaultList,
+      'web': self._defaultList,
+      'pending': self._defaultList,
+      'user': self._defaultDict,
     }
 
 
-  def _default(self):
+  def _defaultList(self):
     return []
+
+
+  def _defaultDict(self):
+    return {}
 
 
   def _formatUrl(self, base, path):

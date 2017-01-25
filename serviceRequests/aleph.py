@@ -11,7 +11,8 @@ class Aleph(RequestType):
     # self.url = "http://aleph2.library.nd.edu:8991"
     self.url = "http://10.71.1.130"
 
-    self._setCallback('checked_out', self.checked_out)
+    self._setCallback('checkedOut', self.checkedOut)
+    self._setCallback('user', self.userData)
 
 
   def _parseXML(self, xmlStr):
@@ -48,10 +49,12 @@ class Aleph(RequestType):
 
 
   def _makeAlephItem(self, alephDir, isHolds = False):
+    # no due for holds
     item = {
       'title': self._getZPart(alephDir, 13, "title"),
       'author': self._getZPart(alephDir, 13, "author"),
       'dueDate': alephDir["due-date"],
+      'published': self._getZPart(alephDir, 13, "imprint"),
     }
 
     if isHolds:
@@ -67,14 +70,13 @@ class Aleph(RequestType):
       'address1': self._getZPart(parsed, 304, "address-1"),
       'address2': self._getZPart(parsed, 304, "address-2"),
       'telephone': self._getZPart(parsed, 304, "telephone"),
+      'telephone2': self._getZPart(parsed, 304, "telephone-2"),
       'homeLibrary': self._getZPart(parsed, 303, "home-library"),
       'status': self._getZPart(parsed, 305, "bor-status"),
-
-      # 'holds': [ self._makeAlephItem(i, True) for i in parsed.get('item-h', []) ],
     }
 
 
-  def user_data(self):
+  def userData(self):
     path = hackyAPIKey.aleph
 
     headers = {
@@ -87,7 +89,7 @@ class Aleph(RequestType):
     return self._format(parsed)
 
 
-  def checked_out(self):
+  def checkedOut(self):
     path = hackyAPIKey.aleph
 
     headers = {
@@ -97,5 +99,6 @@ class Aleph(RequestType):
     url = self._formatUrl(self.url, path)
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
+    # 'holds': [ self._makeAlephItem(i, True) for i in parsed.get('item-h', []) ],
     return [ self._makeAlephItem(i) for i in parsed.get('item-l', []) ]
 
