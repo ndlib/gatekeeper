@@ -1,3 +1,4 @@
+import heslog
 import json
 from requestType import RequestType
 import hackyAPIKey
@@ -51,7 +52,7 @@ class Illiad(RequestType):
     try:
       loaded = json.loads(response)
     except ValueError:
-      print "Response doesn't contain json %s" % response
+      heslog.error("Response doesn't contain json %s" % response)
       return []
 
     return self._format(loaded)

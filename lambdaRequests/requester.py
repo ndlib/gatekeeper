@@ -1,3 +1,4 @@
+import heslog
 import json
 import Queue
 import urllib2
@@ -21,7 +22,7 @@ class ThreadUrl(threading.Thread):
           self.outDict[k] = {}
         self.outDict[k].update(v)
       else:
-        print "Not sure what to do with this information %s" % v
+        heslog.error("Not sure what to do with this information %s" % v)
 
 
   def run(self):
@@ -32,12 +33,12 @@ class ThreadUrl(threading.Thread):
         response = urllib2.urlopen(host)
         self.updateOut(json.loads(response.read()))
       except urllib2.HTTPError as e:
-        print e.code
-        print e.read()
+        heslog.error(e.code)
+        heslog.error(e.read())
       except urllib2.URLError as e:
-        print e.reason
+        heslog.error(e.reason)
       except Exception as e:
-        print e
+        heslog.error(e)
 
       self.queue.task_done()
 
@@ -56,7 +57,6 @@ class Requester(object):
       "illiad",
     ]
 
-    print len(self.services)
     for i in range(len(self.services)):
       t = ThreadUrl(self.queue, self.out)
       t.setDaemon(True)

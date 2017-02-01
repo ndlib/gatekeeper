@@ -1,3 +1,4 @@
+import heslog
 import xml.etree.ElementTree as ET
 from requestType import RequestType
 import hackyAPIKey

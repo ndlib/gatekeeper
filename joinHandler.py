@@ -1,3 +1,4 @@
+import heslog
 import json
 from lambdaRequests.requester import Requester
 
@@ -7,8 +8,6 @@ netid = "rfox2"
 # netid = "lajamie"
 
 def borrowed(event, context):
-  # print event
-
   requester = Requester(netid)
   data = requester.checkedOut()
 
