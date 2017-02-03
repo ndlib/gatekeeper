@@ -78,7 +78,7 @@ class Aleph(RequestType):
 
 
   def userData(self):
-    path = hesutil.getEnv("ALEPH_PATH")
+    path = hesutil.getEnv("ALEPH_PATH", throw=True)
 
     headers = {
       'Content-Type': 'xml',
@@ -91,7 +91,9 @@ class Aleph(RequestType):
 
 
   def checkedOut(self):
-    path = hesutil.getEnv("ALEPH_PATH")
+    path = hesutil.getEnv("ALEPH_PATH", throw=True)
+    if path is None:
+      return None;
 
     headers = {
       'Content-Type': 'xml',

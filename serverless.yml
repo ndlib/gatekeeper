@@ -16,6 +16,11 @@ service: portalResources # NOTE: update this with your service name
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
+package:
+  exclude:
+    - "*Env"
+    - "*.sh"
+    - "test*"
 
 provider:
   name: aws
@@ -28,37 +33,25 @@ provider:
     Description: Getting Serverless API Running
     InceptDate: "2017-01-19"
 
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
+  environment:
+    ALEPH_FUNC:
+      Fn::Join:
+        - ":"
+        - - "arn:aws:lambda"
+          - "Ref" : "AWS::Region"
+          - "Ref" : "AWS::AccountId"
+          - "function:portalResources-${opt:stage, self:provider.stage}-aleph"
+    ILLIAD_FUNC:
+      Fn::Join:
+        - ":"
+        - - "arn:aws:lambda"
+          - "Ref" : "AWS::Region"
+          - "Ref" : "AWS::AccountId"
+          - "function:portalResources-${opt:stage, self:provider.stage}-illiad"
 
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.py
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.py
-#    - exclude-me-dir/**
+  # Can't figure out how to reference this for authorizer
+  # jwtAuth:
+  #   arn: { "Fn::Join": ["", ["arn:aws:lambda", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, "function:jwt-auth-${opt:stage, self:provider.stage}-lambda_handler"]] }
 
 functions:
   borrowed:
@@ -68,8 +61,9 @@ functions:
       - http:
           path: items/borrowed
           method: get
-          # This needs to change for dev vs prod somehow
-          authorizer: arn:aws:lambda:us-east-1:333680067100:function:jwt-auth-dev-lambda_handler
+          headers:
+            - netid
+          authorizer: "arn:aws:lambda:us-east-1:333680067100:function:jwt-auth-dev-lambda_handler"
 
   pending:
     handler: joinHandler.pending
@@ -78,8 +72,9 @@ functions:
       - http:
           path: items/pending
           method: get
-          # This needs to change for dev vs prod somehow
-          authorizer: arn:aws:lambda:us-east-1:333680067100:function:jwt-auth-dev-lambda_handler
+          headers:
+            - netid
+          authorizer: "arn:aws:lambda:us-east-1:333680067100:function:jwt-auth-dev-lambda_handler"
 
   aleph:
     handler: serviceHandler.aleph
@@ -90,52 +85,7 @@ functions:
         - sg-2e15b752
       subnetIds:
         - subnet-fee3a4d3
-    events:
-      - http:
-          path: items/borrowed/aleph
-          method: get
-      - http:
-          path: items/pending/aleph
-          method: get
 
   illiad:
     handler: serviceHandler.illiad
-    events:
-      - http:
-          path: items/borrowed/illiad
-          method: get
-      - http:
-          path: items/pending/illiad
-          method: get
 
-
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"

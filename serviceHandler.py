@@ -34,30 +34,23 @@ def _error():
   }
 
 
-def _requestType(path):
-  for k,v in requestTypes.iteritems():
-    if k in path:
-      return k
-  return None
-
-
 def aleph(event, context):
-  netid = event.get("headers", {}).get("Netid", "")
+  netid = event.get("netid", None)
   if netid is None:
     return _error()
 
-  requestType = _requestType(event["path"])
+  requestType = event.get("type", None)
   data = _handle(Aleph(netid), requestType)
 
   return _success(data)
 
 
 def illiad(event, context):
-  netid = event.get("headers", {}).get("Netid", None)
+  netid = event.get("netid", None)
   if netid is None:
     return _error()
 
-  requestType = _requestType(event["path"])
+  requestType = event.get("type", None)
   data = _handle(Illiad(netid), requestType)
 
   return _success(data)

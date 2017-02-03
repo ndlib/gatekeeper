@@ -1,8 +1,8 @@
-from hesburgh import heslog
+from hesburgh import heslog,hesutil
 import json
 import Queue
-import urllib2
 import threading
+import boto3
 
 class ThreadUrl(threading.Thread):
   def __init__(self, queue, outDict, netid):
@@ -31,14 +31,9 @@ class ThreadUrl(threading.Thread):
       host = self.queue.get()
 
       try:
-        request = urllib2.Request(host, headers={"netid": self.netid})
-        response = urllib2.urlopen(request)
-        self.updateOut(json.loads(response.read()))
-      except urllib2.HTTPError as e:
-        heslog.error(e.code)
-        heslog.error(e.read())
-      except urllib2.URLError as e:
-        heslog.error(e.reason)
+        la = boto3.client("lambda")
+        response = la.invoke(FunctionName=host.get("func", ""), Payload=json.dumps({"netid": self.netid, "type": host.get("type", "")}))
+        self.updateOut(json.loads(response['Payload'].read()))
       except Exception as e:
         heslog.error(e)
 
@@ -53,10 +48,9 @@ class Requester(object):
     self.queue = Queue.Queue()
     self.out = {}
 
-    self.baseUrl = "https://bryppoaj0d.execute-api.us-east-1.amazonaws.com/dev/items/"
     self.services = [
-      "aleph",
-      "illiad",
+      hesutil.getEnv("ALEPH_FUNC"),
+      hesutil.getEnv("ILLIAD_FUNC"),
     ]
 
     for i in range(len(self.services)):
@@ -67,7 +61,7 @@ class Requester(object):
 
   def checkedOut(self):
     for service in self.services:
-      self.queue.put(self.baseUrl + 'borrowed/' + service)
+      self.queue.put({ 'func': service, 'type': 'borrowed' })
 
     self.queue.join()
 
@@ -76,7 +70,7 @@ class Requester(object):
 
   def pending(self):
     for service in self.services:
-      self.queue.put(self.baseUrl + 'pending/' + service)
+      self.queue.put({ 'func': service, 'type': 'pending' })
 
     self.queue.join()
 

@@ -10,11 +10,11 @@ def debug(name, func, event=None, context=None):
   heslog.test(json.dumps(out, indent = 2))
   heslog.test("== ~%s ==\n" % name)
 
-event = {"path": "/items/pending/illiad"}
+event = {"type": "pending", "netid": "hbeachey"}
 debug("aleph - pending", serviceHandler.aleph, event)
 debug("illiad - pending", serviceHandler.illiad, event)
 
-event = {"path": "/items/borrowed/illiad", "headers": {"Netid": "hbeachey"}}
+event = {"type": "borrowed", "netid": "hbeachey"}
 debug("aleph - borrowed", serviceHandler.aleph, event)
 debug("illiad - borrowed", serviceHandler.illiad, event)
 
