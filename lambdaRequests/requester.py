@@ -1,14 +1,15 @@
-import heslog
+from hesburgh import heslog
 import json
 import Queue
 import urllib2
 import threading
 
 class ThreadUrl(threading.Thread):
-  def __init__(self, queue, outDict):
+  def __init__(self, queue, outDict, netid):
     threading.Thread.__init__(self)
     self.queue = queue
     self.outDict = outDict
+    self.netid = netid
 
 
   def updateOut(self, data):
@@ -30,7 +31,8 @@ class ThreadUrl(threading.Thread):
       host = self.queue.get()
 
       try:
-        response = urllib2.urlopen(host)
+        request = urllib2.Request(host, headers={"netid": self.netid})
+        response = urllib2.urlopen(request)
         self.updateOut(json.loads(response.read()))
       except urllib2.HTTPError as e:
         heslog.error(e.code)
@@ -58,7 +60,7 @@ class Requester(object):
     ]
 
     for i in range(len(self.services)):
-      t = ThreadUrl(self.queue, self.out)
+      t = ThreadUrl(self.queue, self.out, self.netid)
       t.setDaemon(True)
       t.start()
 

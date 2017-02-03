@@ -4,9 +4,6 @@ from serviceRequests.illiad import Illiad
 
 # need to figure out what is secret in aleph + how to handle secrets in lambda
 
-netid = "rfox2"
-# netid = "lajamie"
-
 requestTypes = {
   "borrowed": ["checkedOut", "web"],
   "pending": ["pending"],
@@ -31,6 +28,12 @@ def _success(data):
   }
 
 
+def _error():
+  return {
+    "statusCode": 404,
+  }
+
+
 def _requestType(path):
   for k,v in requestTypes.iteritems():
     if k in path:
@@ -39,6 +42,10 @@ def _requestType(path):
 
 
 def aleph(event, context):
+  netid = event.get("headers", {}).get("Netid", "")
+  if netid is None:
+    return _error()
+
   requestType = _requestType(event["path"])
   data = _handle(Aleph(netid), requestType)
 
@@ -46,6 +53,10 @@ def aleph(event, context):
 
 
 def illiad(event, context):
+  netid = event.get("headers", {}).get("Netid", None)
+  if netid is None:
+    return _error()
+
   requestType = _requestType(event["path"])
   data = _handle(Illiad(netid), requestType)
 

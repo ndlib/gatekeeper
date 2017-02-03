@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export ILLIAD_KEY=""
+export ALEPH_PATH=""
+
+python test.py

@@ -1,7 +1,7 @@
-import heslog
+from hesburgh import heslog,hesutil
 import xml.etree.ElementTree as ET
 from requestType import RequestType
-import hackyAPIKey
+
 
 class Aleph(RequestType):
   """docstring for Aleph"""
@@ -78,7 +78,7 @@ class Aleph(RequestType):
 
 
   def userData(self):
-    path = hackyAPIKey.aleph
+    path = hesutil.getEnv("ALEPH_PATH")
 
     headers = {
       'Content-Type': 'xml',
@@ -91,7 +91,7 @@ class Aleph(RequestType):
 
 
   def checkedOut(self):
-    path = hackyAPIKey.aleph
+    path = hesutil.getEnv("ALEPH_PATH")
 
     headers = {
       'Content-Type': 'xml',

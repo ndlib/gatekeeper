@@ -2,4 +2,5 @@
 *.pyc
 .serverless
 node-version
-hackyAPIKey.py
+*Env
+hesburgh

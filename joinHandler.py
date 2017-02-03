@@ -1,13 +1,13 @@
-import heslog
+from hesburgh import heslog
 import json
 from lambdaRequests.requester import Requester
 
 # need to figure out what is secret in aleph + how to handle secrets in lambda
-
-netid = "rfox2"
-# netid = "lajamie"
-
 def borrowed(event, context):
+  netid = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
+  if netid is None:
+    return {"statusCode": 404}
+
   requester = Requester(netid)
   data = requester.checkedOut()
 
@@ -20,6 +20,10 @@ def borrowed(event, context):
 
 
 def pending(event, context):
+  netid = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
+  if netid is None:
+    return {"statusCode": 404}
+
   requester = Requester(netid)
   data = requester.pending()
 

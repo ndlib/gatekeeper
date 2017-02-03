@@ -1,7 +1,6 @@
-import heslog
+from hesburgh import heslog,hesutil
 import json
 from requestType import RequestType
-import hackyAPIKey
 
 class Illiad(RequestType):
   def __init__(self, netid):
@@ -45,7 +44,7 @@ class Illiad(RequestType):
     url = self._formatUrl(self.url, path)
     headers = {
       'Content-Type': 'application/json',
-      'ApiKey': hackyAPIKey.key,
+      'ApiKey': hesutil.getEnv("ILLIAD_KEY"),
     }
 
     response = self._makeReq(url, headers)
