@@ -25,13 +25,16 @@ package:
 provider:
   name: aws
   runtime: python2.7
+  deploymentBucket: ${opt:infra}-serverless
+  accountId: 333680067100
+  role: arn:aws:iam::${self:provider.accountId}:role/basic/iam-ServiceBasic-1IFRVV55K0DYW
   stackTags:
-    Name: Serverless Test Harrison
-    Environment: temporary
+    Name: "${opt:infra}-${self:service}-${opt:stage}"
     Contact: hbeachey@nd.edu
     Owner: Harrison Beachey
-    Description: Getting Serverless API Running
+    Description: Service to get book/resource information for a given netid
     InceptDate: "2017-01-19"
+
 
   environment:
     ALEPH_FUNC:
@@ -55,30 +58,30 @@ provider:
 
 functions:
   borrowed:
+    description: Get borrowed resources for given netid
     handler: joinHandler.borrowed
     timeout: 15
     events:
       - http:
           path: items/borrowed
           method: get
-          headers:
-            - netid
-          authorizer: "arn:aws:lambda:us-east-1:333680067100:function:jwt-auth-dev-lambda_handler"
+          authorizer: arn:aws:lambda:us-east-1:${self:provider.accountId}:function:lambda-authorizer-dev
 
   pending:
+    description: Get pending resources for given netid
     handler: joinHandler.pending
     timeout: 15
     events:
       - http:
           path: items/pending
           method: get
-          headers:
-            - netid
-          authorizer: "arn:aws:lambda:us-east-1:333680067100:function:jwt-auth-dev-lambda_handler"
+          authorizer: arn:aws:lambda:us-east-1:${self:provider.accountId}:function:lambda-authorizer-dev
 
   aleph:
+    description: Get aleph resources for given netid
     handler: serviceHandler.aleph
     timeout: 15
+    # This currently can't be deployed -- needs to be able to call CreateNetworkInterface
     vpc:
       securityGroupIds:
         - sg-bd3e9cc1
@@ -87,5 +90,6 @@ functions:
         - subnet-fee3a4d3
 
   illiad:
+    description: Get illiad resources for given netid
     handler: serviceHandler.illiad
 
