@@ -44,7 +44,7 @@ class Illiad(RequestType):
     url = self._formatUrl(self.url, path)
     headers = {
       'Content-Type': 'application/json',
-      'ApiKey': hesutil.getEnv("ILLIAD_KEY", throw=True),
+      'ApiKey': hesutil.getEnv("ILLIAD_KEY"),
     }
 
     response = self._makeReq(url, headers)

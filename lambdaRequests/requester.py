@@ -32,8 +32,17 @@ class ThreadUrl(threading.Thread):
 
       try:
         la = boto3.client("lambda")
-        response = la.invoke(FunctionName=host.get("func", ""), Payload=json.dumps({"netid": self.netid, "type": host.get("type", "")}))
-        self.updateOut(json.loads(response['Payload'].read()))
+        response = la.invoke(
+          FunctionName=host.get("func", ""),
+          Payload=json.dumps({
+            "netid": self.netid,
+            "type": host.get("type", ""),
+            "trace": host.get("trace", ""),
+          })
+        )
+        payload = response['Payload'].read()
+        jsonPayload = json.loads(payload)
+        self.updateOut(jsonPayload)
       except Exception as e:
         heslog.error(e)
 
@@ -41,9 +50,10 @@ class ThreadUrl(threading.Thread):
 
 
 class Requester(object):
-  def __init__(self, netid):
+  def __init__(self, netid, trace):
     super(Requester, self).__init__()
     self.netid = netid
+    self.trace = trace
 
     self.queue = Queue.Queue()
     self.out = {}
@@ -61,7 +71,7 @@ class Requester(object):
 
   def checkedOut(self):
     for service in self.services:
-      self.queue.put({ 'func': service, 'type': 'borrowed' })
+      self.queue.put({ 'func': service, 'type': 'borrowed', 'trace': self.trace })
 
     self.queue.join()
 

@@ -1,3 +1,24 @@
 #!/bin/bash
 
-serverless deploy --infra testlibnd --stage dev $@
+export ILLIAD_KEY="leave this"
+export ALEPH_PATH="_change_me_"
+
+command -v jq >/dev/null 2>&1 || { echo >&2 "I require jq but it's not installed.  Aborting."; exit 1; }
+if [ -z ${ILLIAD_KEY+x} ]; then echo "Environment variable ILLIAD_KEY required"; exit; fi
+if [ -z ${ALEPH_PATH+x} ]; then echo "Environment variable ALEPH_PATH required"; exit; fi
+if [ -z ${AWS_ROLE_ARN+x} ]; then echo "Environment variable AWS_ROLE_ARN required"; exit; fi
+
+export STAGE_NAME="dev"
+export INFRA="testlibnd"
+
+serverless deploy --infra $INFRA --stage $STAGE_NAME $@
+
+export ILLIAD_KEY="_change_me_"
+
+# Encrypt contentful tokens and inject into the fetch function env
+export KMS_ARN="alias/portalResources-$STAGE_NAME"
+export ILLIAD_KEY=`aws kms encrypt --key-id $KMS_ARN --plaintext $ILLIAD_KEY | jq -r ".CiphertextBlob"`
+
+aws lambda update-function-configuration \
+  --function-name portalResources-$STAGE_NAME-illiad \
+  --environment "Variables={ ILLIAD_KEY='$ILLIAD_KEY' }"

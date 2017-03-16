@@ -13,9 +13,9 @@
 
 service: portalResources # NOTE: update this with your service name
 
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
+custom:
+  serviceStage: ${{self:service}}-${{opt:stage}}
+
 package:
   exclude:
     - "*Env"
@@ -25,11 +25,11 @@ package:
 provider:
   name: aws
   runtime: python2.7
-  deploymentBucket: ${opt:infra}-serverless
-  accountId: 333680067100
-  role: arn:aws:iam::${self:provider.accountId}:role/basic/iam-ServiceBasic-1IFRVV55K0DYW
+  deploymentBucket: ${{opt:infra}}-serverless
+  role: defaultRole
+  variableSyntax: '\${{([\s\S]+?)}}' # Change the serverless variable syntax to be ${{}}, so that we can use Fn::Sub "${}"
   stackTags:
-    Name: "${opt:infra}-${self:service}-${opt:stage}"
+    Name: "${{opt:infra}}-${{self:custom.serviceStage}}"
     Contact: hbeachey@nd.edu
     Owner: Harrison Beachey
     Description: Service to get book/resource information for a given netid
@@ -41,23 +41,23 @@ provider:
       Fn::Join:
         - ":"
         - - "arn:aws:lambda"
-          - "Ref" : "AWS::Region"
-          - "Ref" : "AWS::AccountId"
-          - "function:portalResources-${opt:stage, self:provider.stage}-aleph"
+          - Ref: "AWS::Region"
+          - Ref: "AWS::AccountId"
+          - "function"
+          - ${{self:functions.aleph.name}}
     ILLIAD_FUNC:
       Fn::Join:
         - ":"
         - - "arn:aws:lambda"
-          - "Ref" : "AWS::Region"
-          - "Ref" : "AWS::AccountId"
-          - "function:portalResources-${opt:stage, self:provider.stage}-illiad"
+          - Ref: "AWS::Region"
+          - Ref: "AWS::AccountId"
+          - "function"
+          - ${{self:functions.illiad.name}}
 
-  # Can't figure out how to reference this for authorizer
-  # jwtAuth:
-  #   arn: { "Fn::Join": ["", ["arn:aws:lambda", { "Ref" : "AWS::Region" }, { "Ref" : "AWS::AccountId" }, "function:jwt-auth-${opt:stage, self:provider.stage}-lambda_handler"]] }
 
 functions:
   borrowed:
+    name: ${{self:custom.serviceStage}}-borrowed
     description: Get borrowed resources for given netid
     handler: joinHandler.borrowed
     timeout: 15
@@ -65,9 +65,11 @@ functions:
       - http:
           path: items/borrowed
           method: get
-          authorizer: arn:aws:lambda:us-east-1:${self:provider.accountId}:function:lambda-authorizer-dev
+          authorizer: "not:real:authorizer:jwt"
+          cors: true
 
   pending:
+    name: ${{self:custom.serviceStage}}-pending
     description: Get pending resources for given netid
     handler: joinHandler.pending
     timeout: 15
@@ -75,9 +77,11 @@ functions:
       - http:
           path: items/pending
           method: get
-          authorizer: arn:aws:lambda:us-east-1:${self:provider.accountId}:function:lambda-authorizer-dev
+          authorizer: "not:real:authorizer:jwt"
+          cors: true
 
   aleph:
+    name: ${{self:custom.serviceStage}}-aleph
     description: Get aleph resources for given netid
     handler: serviceHandler.aleph
     timeout: 15
@@ -88,8 +92,69 @@ functions:
         - sg-2e15b752
       subnetIds:
         - subnet-fee3a4d3
+    environment:
+      ALEPH_PATH: ${{env:ALEPH_PATH}}
 
   illiad:
+    name: ${{self:custom.serviceStage}}-illiad
     description: Get illiad resources for given netid
     handler: serviceHandler.illiad
+    environment:
+      ILLIAD_KEY: ${{env:ILLIAD_KEY}}
 
+
+resources:
+  Resources:
+    # KMS
+    ServiceKey: ${{file(kms.yml):ServiceKey}}
+    ServiceKeyAlias: ${{file(kms.yml):ServiceKeyAlias}}
+
+    defaultRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${{self:custom.serviceStage}}
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        Policies:
+          - PolicyName: "InvokeLambdas"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "lambda:InvokeFunction"
+                  Resource:
+                    - ${{self:provider.environment.ALEPH_FUNC}}
+                    - ${{self:provider.environment.ILLIAD_FUNC}}
+                - Effect: "Allow"
+                  Action:
+                    - "kms:Decrypt"
+                  Resource: "arn:aws:kms:::alias/${{self:custom.serviceStage}}"
+
+    JwtApiGatewayAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        AuthorizerUri:
+          Fn::Join:
+            - ":"
+            - - "arn:aws:apigateway"
+              - Ref: "AWS::Region"
+              - "lambda:path/2015-03-31/functions/arn:aws:lambda"
+              - Ref: "AWS::Region"
+              - Ref: "AWS::AccountId"
+              - "function:lambda-authorizer-dev/invocations"
+    JwtLambdaPermissionApiGateway:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName:
+          Fn::Sub: "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lambda-authorizer-dev"
