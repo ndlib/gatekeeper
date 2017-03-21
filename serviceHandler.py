@@ -1,4 +1,5 @@
 import json
+from hesburgh import heslog
 from serviceRequests.aleph import Aleph
 from serviceRequests.illiad import Illiad
 
@@ -22,10 +23,8 @@ def _handle(service, requestType):
 
 
 def _success(data):
-  return {
-    "statusCode": 200,
-    "body": json.dumps(data),
-  }
+  heslog.info("success")
+  return data
 
 
 def _error():
@@ -35,23 +34,29 @@ def _error():
 
 
 def aleph(event, context):
+  requestType = event.get("type", None)
+  heslog.addContext(fn="aleph", trace=event.get("trace", ""), requestType=requestType)
+  heslog.info("Starting request")
+
   netid = event.get("netid", None)
   if netid is None:
+    heslog.error("no netid")
     return _error()
 
-  requestType = event.get("type", None)
   data = _handle(Aleph(netid), requestType)
-
   return _success(data)
 
 
 def illiad(event, context):
+  requestType = event.get("type", None)
+  heslog.addContext(fn="illiad", trace=event.get("trace", ""), requestType=requestType)
+  heslog.info("Starting request")
+
   netid = event.get("netid", None)
   if netid is None:
+    heslog.error("no netid")
     return _error()
 
-  requestType = event.get("type", None)
   data = _handle(Illiad(netid), requestType)
-
   return _success(data)
 
