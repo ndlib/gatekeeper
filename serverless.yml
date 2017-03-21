@@ -25,11 +25,11 @@ package:
 provider:
   name: aws
   runtime: python2.7
-  deploymentBucket: ${{opt:infra}}-serverless
+  deploymentBucket: ${{opt:deploymentBucket}}
   role: defaultRole
   variableSyntax: '\${{([\s\S]+?)}}' # Change the serverless variable syntax to be ${{}}, so that we can use Fn::Sub "${}"
   stackTags:
-    Name: "${{opt:infra}}-${{self:custom.serviceStage}}"
+    Name: "${{self:custom.serviceStage}}"
     Contact: hbeachey@nd.edu
     Owner: Harrison Beachey
     Description: Service to get book/resource information for a given netid
