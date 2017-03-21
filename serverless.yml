@@ -25,7 +25,7 @@ package:
 provider:
   name: aws
   runtime: python2.7
-  deploymentBucket: ${{opt:deploymentBucket}}
+  deploymentBucket: ${{opt:deployBucket}}
   role: defaultRole
   variableSyntax: '\${{([\s\S]+?)}}' # Change the serverless variable syntax to be ${{}}, so that we can use Fn::Sub "${}"
   stackTags:
