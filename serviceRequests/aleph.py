@@ -51,11 +51,20 @@ class Aleph(RequestType):
 
   def _makeAlephItem(self, alephDir, isHolds = False):
     # no due for holds
+    status = self._getZPart(alephDir, 36, "status")
+    if status == "A":
+      status = "On Loan"
+    elif status == "C":
+      status = "Claimed Return"
+    elif status == "L":
+      status = "Lost"
+
     item = {
       'title': self._getZPart(alephDir, 13, "title"),
       'author': self._getZPart(alephDir, 13, "author"),
       'dueDate': alephDir["due-date"],
       'published': self._getZPart(alephDir, 13, "imprint"),
+      'status': status,
     }
 
     if isHolds:
