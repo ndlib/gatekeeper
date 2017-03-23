@@ -11,19 +11,23 @@ host: fwyleg0kcg.execute-api.us-east-1.amazonaws.com
 schemes:
   - https
 basePath: /dev/items
+
 paths:
   /borrowed:
     get:
       summary: Get all borrowed resources for the user
-      parameters:
-        - name: Authroization
-          in: header
-          description: The JWT token containing the user's netid
-          required: true
-          type: string
+      security:
+        - jwt: []
       responses:
         200:
           description: The Checked out resource information
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
           schema:
             $ref: '#/definitions/OutList'
         401:
@@ -39,15 +43,18 @@ paths:
       summary: Get all pending resources for the user
       description: |
         Log into CAS and return a JWT token containing user information
-      parameters:
-        - name: Authroization
-          in: header
-          description: The JWT token containing the user's netid
-          required: true
-          type: string
+      security:
+        - jwt: []
       responses:
         200:
           description: The Pending resource information
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
           schema:
             $ref: '#/definitions/PendList'
         401:
@@ -58,6 +65,13 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+
+securityDefinitions:
+  jwt:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+
 definitions:
   Item:
     type: object
