@@ -112,5 +112,9 @@ class Aleph(RequestType):
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
     # 'holds': [ self._makeAlephItem(i, True) for i in parsed.get('item-h', []) ],
-    return [ self._makeAlephItem(i) for i in parsed.get('item-l', []) ]
+
+    items = parsed.get('item-l', [])
+    if type(items) is dict:
+      items = [items]
+    return [ self._makeAlephItem(i) for i in items ]
 

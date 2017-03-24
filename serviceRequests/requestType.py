@@ -33,7 +33,7 @@ class RequestType(object):
     try:
       response = urllib2.urlopen(req)
     except urllib2.HTTPError as e:
-      heslog.error(e.code)
+      heslog.error("%s" % e.code)
       heslog.error(e.read())
       return "Error"
     except urllib2.URLError as e:
