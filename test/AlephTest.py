@@ -2,12 +2,12 @@ import unittest
 from mock import Mock
 import serviceHandler
 from serviceRequests.aleph import Aleph
-from hesburgh import hesutil
+from hesburgh import hesutil, hestest
 import json
 import os
 
-import alephTestData
-testData = alephTestData.data
+hestest.init(__file__, "../testdata")
+mockdata = hestest.get("t_heslib01", {}).get("aleph")
 
 class AlephTestCase(unittest.TestCase):
 
@@ -16,7 +16,7 @@ class AlephTestCase(unittest.TestCase):
 
     self.netid = "test_netid"
     self.handler = Aleph(self.netid)
-    self.handler._makeReq = Mock(return_value=testData)
+    self.handler._makeReq = Mock(return_value=mockdata)
 
 
   def test_user_data_format(self):

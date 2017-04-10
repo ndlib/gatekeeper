@@ -2,13 +2,12 @@ import unittest
 from mock import Mock
 import serviceHandler
 from serviceRequests.illiad import Illiad
-from hesburgh import hesutil
+from hesburgh import hesutil, hestest
 import json
 import os
 
-import illiadTestData
-
-testData = illiadTestData.data
+hestest.init(__file__, "../testdata")
+mockdata = hestest.get("t_heslib01", {}).get("illiad")
 
 class IlliadTestCase(unittest.TestCase):
   def setUp(self):
@@ -16,7 +15,7 @@ class IlliadTestCase(unittest.TestCase):
 
     self.netid = "test_netid"
     self.handler = Illiad(self.netid)
-    self.handler._makeReq = Mock(return_value=testData)
+    self.handler._makeReq = Mock(return_value=mockdata)
 
 
   def bookTest(self, item):

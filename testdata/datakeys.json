@@ -1,0 +1,4 @@
+{
+  "aleph": { "load_file": "aleph.json" },
+  "illiad": { "load_file": "illiad.json" }
+}

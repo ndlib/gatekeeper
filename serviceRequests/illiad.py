@@ -1,4 +1,4 @@
-from hesburgh import heslog,hesutil
+from hesburgh import heslog, hesutil, hestest
 import json
 from requestType import RequestType
 
@@ -47,7 +47,12 @@ class Illiad(RequestType):
       'ApiKey': hesutil.getEnv("ILLIAD_KEY", throw=True),
     }
 
-    response = self._makeReq(url, headers)
+    data = hestest.get(self.netid)
+    if data:
+      response = data.get("illiad", "")
+    else:
+      response = self._makeReq(url, headers)
+
     try:
       loaded = json.loads(response)
     except ValueError:
