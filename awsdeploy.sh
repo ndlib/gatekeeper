@@ -13,12 +13,12 @@ serverless deploy --deployBucket $DEPLOY_BUCKET --stage $STAGE_NAME
 # Encrypt contentful tokens and inject into the fetch function env
 KMS_ARN="alias/portalResources-$STAGE_NAME"
 
-ALEPH_PATH=`aws kms encrypt --key-id $KMS_ARN --plaintext $ALEPH_PATH | jq -r ".CiphertextBlob"`
+ALEPH_PATH=`aws kms encrypt --key-id $KMS_ARN --plaintext $ALEPH_PATH --query CiphertextBlob --output text`
 aws lambda update-function-configuration \
   --function-name portalResources-$STAGE_NAME-aleph \
   --environment "Variables={ ALEPH_PATH='$ALEPH_PATH' }"
 
-ILLIAD_KEY=`aws kms encrypt --key-id $KMS_ARN --plaintext $ILLIAD_KEY | jq -r ".CiphertextBlob"`
+ILLIAD_KEY=`aws kms encrypt --key-id $KMS_ARN --plaintext $ILLIAD_KEY --query CiphertextBlob --output text`
 aws lambda update-function-configuration \
   --function-name portalResources-$STAGE_NAME-illiad \
   --environment "Variables={ ILLIAD_KEY='$ILLIAD_KEY' }"
