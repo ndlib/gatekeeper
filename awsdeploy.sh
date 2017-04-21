@@ -1,30 +1,24 @@
 #!/bin/bash
-
-export ILLIAD_KEY="leave_this"
-export ALEPH_PATH="leave_this"
-
-command -v jq >/dev/null 2>&1 || { echo >&2 "I require jq but it's not installed.  Aborting."; exit 1; }
+if [ -z ${1+x} ]; then echo "Stage name required. Ex: $0 dev testlibnd-serverless"; exit; else echo "Deploying to stage '$1'"; fi
+if [ -z ${2+x} ]; then echo "Deploy bucket required. Ex: $0 dev testlibnd-serverless"; exit; else echo "Deploying to bucket '$2'"; fi
 if [ -z ${ILLIAD_KEY+x} ]; then echo "Environment variable ILLIAD_KEY required"; exit; fi
 if [ -z ${ALEPH_PATH+x} ]; then echo "Environment variable ALEPH_PATH required"; exit; fi
 if [ -z ${AWS_ROLE_ARN+x} ]; then echo "Environment variable AWS_ROLE_ARN required"; exit; fi
 
-export STAGE_NAME="dev"
-export DEPLOY_BUCKET="testlibnd-serverless"
+STAGE_NAME=$1
+DEPLOY_BUCKET=$2
 
-serverless deploy --deployBucket $DEPLOY_BUCKET --stage $STAGE_NAME $@
-
-export ILLIAD_KEY="_change_me_"
-export ALEPH_PATH="_change_me_"
+serverless deploy --deployBucket $DEPLOY_BUCKET --stage $STAGE_NAME
 
 # Encrypt contentful tokens and inject into the fetch function env
-export KMS_ARN="alias/portalResources-$STAGE_NAME"
+KMS_ARN="alias/portalResources-$STAGE_NAME"
 
-export ALEPH_PATH=`aws kms encrypt --key-id $KMS_ARN --plaintext $ALEPH_PATH | jq -r ".CiphertextBlob"`
+ALEPH_PATH=`aws kms encrypt --key-id $KMS_ARN --plaintext $ALEPH_PATH | jq -r ".CiphertextBlob"`
 aws lambda update-function-configuration \
   --function-name portalResources-$STAGE_NAME-aleph \
   --environment "Variables={ ALEPH_PATH='$ALEPH_PATH' }"
 
-export ILLIAD_KEY=`aws kms encrypt --key-id $KMS_ARN --plaintext $ILLIAD_KEY | jq -r ".CiphertextBlob"`
+ILLIAD_KEY=`aws kms encrypt --key-id $KMS_ARN --plaintext $ILLIAD_KEY | jq -r ".CiphertextBlob"`
 aws lambda update-function-configuration \
   --function-name portalResources-$STAGE_NAME-illiad \
   --environment "Variables={ ILLIAD_KEY='$ILLIAD_KEY' }"
