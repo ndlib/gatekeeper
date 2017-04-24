@@ -1,4 +1,4 @@
-from hesburgh import heslog,hesutil
+from hesburgh import heslog, hesutil, hestest
 import json
 from requestType import RequestType
 
@@ -40,14 +40,19 @@ class Illiad(RequestType):
     return [ self._makeIlliadItem(i) for i in data ]
 
 
-  def _illiad(self, path):
+  def _illiad(self, path, requestType):
     url = self._formatUrl(self.url, path)
     headers = {
       'Content-Type': 'application/json',
       'ApiKey': hesutil.getEnv("ILLIAD_KEY", throw=True),
     }
 
-    response = self._makeReq(url, headers)
+    data = hestest.get(self.netid)
+    if data:
+      response = data.get("illiad_" + requestType , "")
+    else:
+      response = self._makeReq(url, headers)
+
     try:
       loaded = json.loads(response)
     except ValueError:
@@ -59,14 +64,14 @@ class Illiad(RequestType):
 
   def checkedOut(self):
     path = "<<netid>>?$filter=(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"
-    return self._illiad(path)
+    return self._illiad(path, "checkedOut")
 
 
   def web(self):
     path = "<<netid>>?$filter=(TransactionStatus%20eq%20%27Delivered%20to%20Web%27)"
-    return self._illiad(path)
+    return self._illiad(path, "web")
 
 
   def pending(self):
     path = "<<netid>>?$filter=(TransactionStatus%20ne%20%27Request%20Finished%27)%20and%20not%20startswith(TransactionStatus,%20%27Cancel%27)%20and%20not%20(TransactionStatus%20eq%20%27Delivered%20to%20Web%27)%20and%20not%20(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"
-    return self._illiad(path)
+    return self._illiad(path, "pending")

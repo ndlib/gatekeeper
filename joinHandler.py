@@ -1,6 +1,8 @@
-from hesburgh import heslog
+from hesburgh import heslog, hestest
 import json
 from lambdaRequests.requester import Requester
+
+hestest.init(__file__, "testdata")
 
 # need to figure out what is secret in aleph + how to handle secrets in lambda
 def borrowed(event, context):

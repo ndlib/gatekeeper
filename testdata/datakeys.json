@@ -1,0 +1,6 @@
+{
+  "aleph": { "load_file": "aleph.json" },
+  "illiad_checkedOut": { "load_file": "illiadCheckedOut.json" },
+  "illiad_pending": { "load_file": "illiadPending.json" },
+  "illiad_web": { "load_file": "illiadWeb.json" }
+}

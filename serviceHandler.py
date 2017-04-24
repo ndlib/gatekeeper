@@ -1,8 +1,9 @@
 import json
-from hesburgh import heslog
+from hesburgh import heslog, hesutil, hestest
 from serviceRequests.aleph import Aleph
 from serviceRequests.illiad import Illiad
 
+hestest.init(__file__, "testdata")
 # need to figure out what is secret in aleph + how to handle secrets in lambda
 
 requestTypes = {

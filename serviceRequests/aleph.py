@@ -1,4 +1,4 @@
-from hesburgh import heslog,hesutil
+from hesburgh import heslog, hesutil, hestest
 import xml.etree.ElementTree as ET
 from requestType import RequestType
 
@@ -108,8 +108,13 @@ class Aleph(RequestType):
       'Content-Type': 'xml',
     }
 
-    url = self._formatUrl(self.url, path)
-    stringResponse = self._makeReq(url, headers)
+    test = hestest.get(self.netid)
+    if test:
+      stringResponse = test.get("aleph", "")
+    else:
+      url = self._formatUrl(self.url, path)
+      stringResponse = self._makeReq(url, headers)
+
     parsed = self._parseXML(stringResponse)
     # 'holds': [ self._makeAlephItem(i, True) for i in parsed.get('item-h', []) ],
 
