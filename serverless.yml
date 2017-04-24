@@ -93,14 +93,16 @@ functions:
       subnetIds:
         - subnet-fee3a4d3
     environment:
-      ALEPH_PATH: ${{env:ALEPH_PATH}}
+      ALEPH_PATH: ""
+      ALEPH_URL: ${{env:ALEPH_URL}}
 
   illiad:
     name: ${{self:custom.serviceStage}}-illiad
     description: Get illiad resources for given netid
     handler: serviceHandler.illiad
     environment:
-      ILLIAD_KEY: ${{env:ILLIAD_KEY}}
+      ILLIAD_KEY: ""
+      ILLIAD_URL: ${{env:ILLIAD_URL}}
 
 
 resources:
