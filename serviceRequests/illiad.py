@@ -7,7 +7,7 @@ class Illiad(RequestType):
     super(Illiad, self).__init__(netid)
 
     self.name = "Illiad"
-    self.url = "https://nd.illiad.oclc.org/ILLiadWebPlatform/Transaction/UserRequests/"
+    self.url = hesutil.getEnv("ILLIAD_URL", throw=True)
 
     self._setCallback('checkedOut', self.checkedOut)
     self._setCallback('web', self.web)

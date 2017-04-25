@@ -10,7 +10,7 @@ class Aleph(RequestType):
     self.name = "Aleph"
 
     # self.url = "http://aleph2.library.nd.edu:8991"
-    self.url = "http://10.71.1.130"
+    self.url = hesutil.getEnv("ALEPH_URL", throw=True)
 
     self._setCallback('checkedOut', self.checkedOut)
     self._setCallback('user', self.userData)
