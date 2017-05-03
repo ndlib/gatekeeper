@@ -1,0 +1,42 @@
+StackName: ${{self:custom.rolesStackName}}
+Outputs:
+  ExecutionRoleOutput:
+    Description: Role used by all lambdas in this service
+    Value:
+      Fn::GetAtt:
+        - ExecutionRole
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${{self:custom.rolesStackName}}-ExecutionRole"
+Resources:
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: "InvokeLambdas_KMS"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - ${{self:provider.environment.ALEPH_FUNC}}
+                  - ${{self:provider.environment.ILLIAD_FUNC}}
+              - Effect: "Allow"
+                Action:
+                  - "kms:Decrypt"
+                Resource: "arn:aws:kms:::alias/${{self:custom.serviceStage}}"

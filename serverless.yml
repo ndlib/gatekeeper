@@ -13,8 +13,16 @@
 
 service: portalResources # NOTE: update this with your service name
 
+plugins:
+  - serverless-plugin-additional-stacks
+
 custom:
   serviceStage: ${{self:service}}-${{opt:stage}}
+  kmsStackName: ${{self:custom.serviceStage}}-kms
+  rolesStackName: ${{self:custom.serviceStage}}-roles
+  additionalStacks:
+    roles: ${{file(./serverless-roles.yml)}}
+    kms: ${{file(./serverless-kms.yml)}}
 
 package:
   exclude:
@@ -26,7 +34,8 @@ provider:
   name: aws
   runtime: python2.7
   deploymentBucket: ${{opt:deployBucket}}
-  role: defaultRole
+  role:
+    Fn::ImportValue: ${{self:custom.rolesStackName}}-ExecutionRole
   variableSyntax: '\${{([\s\S]+?)}}' # Change the serverless variable syntax to be ${{}}, so that we can use Fn::Sub "${}"
   stackTags:
     Name: "${{self:custom.serviceStage}}"
@@ -100,6 +109,7 @@ functions:
     name: ${{self:custom.serviceStage}}-illiad
     description: Get illiad resources for given netid
     handler: serviceHandler.illiad
+    timeout: 30
     environment:
       ILLIAD_KEY: ""
       ILLIAD_URL: ${{env:ILLIAD_URL}}
@@ -107,42 +117,6 @@ functions:
 
 resources:
   Resources:
-    # KMS
-    ServiceKey: ${{file(kms.yml):ServiceKey}}
-    ServiceKeyAlias: ${{file(kms.yml):ServiceKeyAlias}}
-
-    defaultRole:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: ${{self:custom.serviceStage}}
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Principal:
-                Service:
-                  - "lambda.amazonaws.com"
-              Action:
-                - "sts:AssumeRole"
-        ManagedPolicyArns:
-          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        Policies:
-          - PolicyName: "InvokeLambdas"
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: "Allow"
-                  Action:
-                    - "lambda:InvokeFunction"
-                  Resource:
-                    - ${{self:provider.environment.ALEPH_FUNC}}
-                    - ${{self:provider.environment.ILLIAD_FUNC}}
-                - Effect: "Allow"
-                  Action:
-                    - "kms:Decrypt"
-                  Resource: "arn:aws:kms:::alias/${{self:custom.serviceStage}}"
-
     JwtApiGatewayAuthorizer:
       Type: AWS::ApiGateway::Authorizer
       Properties:
