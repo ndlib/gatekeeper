@@ -1,4 +1,4 @@
-import heslog
+from hesburgh import heslog
 import urllib2
 
 class RequestType(object):

@@ -26,15 +26,29 @@ class Aleph(RequestType):
         else:
           value = child.text
 
+        # This is not pretty, but allows us to get what we want
+        #  from marc records without a complex parser
+        key = child.tag
+        kId = child.attrib.get("id")
+        kI2 = child.attrib.get("i2")
+        if kId and kI2 and kI2 != ' ':
+          kId += "_" + kI2
+
+        kLabel = child.attrib.get("label")
+        suffix = kLabel or kId
+
+        if suffix is not None:
+          key += "_%s" % suffix
+
         # if this key exists in the output already, make that value an array of values
-        if child.tag in out:
-          if isinstance(out[child.tag], list):
-            out[child.tag].append(value)
+        if key in out:
+          if isinstance(out[key], list):
+            out[key].append(value)
           else:
-            currentVal = out[child.tag]
-            out[child.tag] = [currentVal, value]
+            currentVal = out[key]
+            out[key] = [currentVal, value]
         else:
-          out[child.tag] = value
+          out[key] = value
 
       return out
 
@@ -84,6 +98,14 @@ class Aleph(RequestType):
       'homeLibrary': self._getZPart(parsed, 303, "home-library"),
       'status': self._getZPart(parsed, 305, "bor-status"),
     }
+
+
+  def findItem(self, doc):
+    path = hesutil.getEnv("ALEPH_ITEM_PATH", throw=True)
+
+    url = self.url + path.replace("<<doc>>", doc)
+    stringResponse = self._makeReq(url, {})
+    return self._parseXML(stringResponse)
 
 
   def userData(self):

@@ -7,7 +7,6 @@ import json
 import os
 
 hestest.init(__file__, "../testdata")
-mockdata = hestest.get("t_heslib01", {}).get("illiad")
 
 class IlliadTestCase(unittest.TestCase):
   def setUp(self):
@@ -15,7 +14,6 @@ class IlliadTestCase(unittest.TestCase):
 
     self.netid = "test_netid"
     self.handler = Illiad(self.netid)
-    self.handler._makeReq = Mock(return_value=mockdata)
 
 
   def bookTest(self, item):
@@ -37,6 +35,8 @@ class IlliadTestCase(unittest.TestCase):
 
 
   def test_book_format(self):
+    self.handler._makeReq = Mock(return_value=hestest.get("t_heslib01", {}).get("illiad_checkedOut"))
+
     data = self.handler.request("checkedOut")
     headers = { 'Content-Type': 'application/json', 'ApiKey': 'test_key' }
     url = self.handler.url
@@ -51,6 +51,8 @@ class IlliadTestCase(unittest.TestCase):
 
 
   def test_web(self):
+    self.handler._makeReq = Mock(return_value=hestest.get("t_heslib01", {}).get("illiad_web"))
+
     data = self.handler.request("web")
     headers = { 'Content-Type': 'application/json', 'ApiKey': 'test_key' }
     url = self.handler.url
@@ -61,10 +63,12 @@ class IlliadTestCase(unittest.TestCase):
 
     item = data[0]
     self.bookTest(item)
-    self.assertEqual("AWESOME BOOK TITLE", item.get("title"))
+    self.assertEqual("Web Item Title", item.get("title"))
 
 
   def test_pending(self):
+    self.handler._makeReq = Mock(return_value=hestest.get("t_heslib01", {}).get("illiad_pending"))
+
     data = self.handler.request("pending")
     headers = { 'Content-Type': 'application/json', 'ApiKey': 'test_key' }
     url = self.handler.url
@@ -75,7 +79,7 @@ class IlliadTestCase(unittest.TestCase):
 
     item = data[0]
     self.bookTest(item)
-    self.assertEqual("AWESOME BOOK TITLE", item.get("title"))
+    self.assertEqual("Pending Title", item.get("title"))
 
 
 def Suite():
