@@ -17,7 +17,11 @@ KMS_ARN="alias/portalResources-$STAGE_NAME"
 ALEPH_PATH=`aws kms encrypt --key-id $KMS_ARN --plaintext $ALEPH_PATH --query CiphertextBlob --output text`
 aws lambda update-function-configuration \
   --function-name portalResources-$STAGE_NAME-aleph \
-  --environment "Variables={ ALEPH_PATH='$ALEPH_PATH', ALEPH_URL='$ALEPH_URL' }"
+  --environment "Variables={ ALEPH_PATH='$ALEPH_PATH', ALEPH_URL='$ALEPH_URL', ALEPH_ITEM_PATH='$ALEPH_ITEM_PATH' }"
+
+aws lambda update-function-configuration \
+  --function-name portalResources-$STAGE_NAME-alephQuery \
+  --environment "Variables={ ALEPH_PATH='$ALEPH_PATH', ALEPH_URL='$ALEPH_URL', ALEPH_ITEM_PATH='$ALEPH_ITEM_PATH' }"
 
 ILLIAD_KEY=`aws kms encrypt --key-id $KMS_ARN --plaintext $ILLIAD_KEY --query CiphertextBlob --output text`
 aws lambda update-function-configuration \

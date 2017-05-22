@@ -94,7 +94,6 @@ functions:
     description: Get aleph resources for given netid
     handler: serviceHandler.aleph
     timeout: 15
-    # This currently can't be deployed -- needs to be able to call CreateNetworkInterface
     vpc:
       securityGroupIds:
         - sg-bd3e9cc1
@@ -104,6 +103,22 @@ functions:
     environment:
       ALEPH_PATH: ""
       ALEPH_URL: ${{env:ALEPH_URL}}
+
+  alephQuery:
+    name: ${{self:custom.serviceStage}}-alephQuery
+    description: Query aleph for a book
+    handler: alephQuery.findItem
+    events:
+      - http:
+          path: /aleph/{systemId}
+          method: get
+    timeout: 15
+    vpc:
+      securityGroupIds:
+        - sg-bd3e9cc1
+        - sg-2e15b752
+      subnetIds:
+        - subnet-fee3a4d3
 
   illiad:
     name: ${{self:custom.serviceStage}}-illiad
