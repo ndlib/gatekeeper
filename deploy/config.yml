@@ -8,8 +8,8 @@ parameters:
 
 tags:
   Name: $SERVICE-$STAGE
-  Owner: $USER
-  Contact: $USER@nd.edu
+  Owner: ${USER}
+  Contact: ${USER}@nd.edu
   Description: API to get information from aleph and illiad
 
 cloudformations:
@@ -35,33 +35,33 @@ lambdaEnv:
     env:
       -
         name: ALEPH_PATH
-        env: ALEPH_PATH
+        value: ${ALEPH_PATH}
       -
         name: ALEPH_URL
-        env: ALEPH_URL
+        value: ${ALEPH_URL}
       -
         name: ALEPH_ITEM_PATH
-        env: ALEPH_ITEM_PATH
+        value: ${ALEPH_ITEM_PATH}
 
   - name: $SERVICE-$STAGE-alephQuery
     key: alias/$SERVICE-$STAGE
     env:
       -
         name: ALEPH_PATH
-        env: ALEPH_PATH
+        value: ${ALEPH_PATH}
       -
         name: ALEPH_URL
-        env: ALEPH_URL
+        value: ${ALEPH_URL}
       -
         name: ALEPH_ITEM_PATH
-        env: ALEPH_ITEM_PATH
+        value: ${ALEPH_ITEM_PATH}
 
   - name: $SERVICE-$STAGE-illiad
     key: alias/$SERVICE-$STAGE
     env:
       -
         name: ILLIAD_KEY
-        env: ILLIAD_KEY
+        value: ${ILLIAD_KEY}
       -
         name: ILLIAD_URL
-        env: ILLIAD_URL
+        value: ${ILLIAD_URL}
