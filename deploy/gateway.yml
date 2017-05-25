@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Portal Resources Functionality"
+Description: "Portal Resources Gateway"
 
 Parameters:
   ServiceName:

@@ -10,7 +10,7 @@ tags:
   Name: $SERVICE-$STAGE
   Owner: $USER
   Contact: $USER@nd.edu
-  Description: API Gateway JWT Authenticator
+  Description: API to get information from aleph and illiad
 
 cloudformations:
   - root.yml
