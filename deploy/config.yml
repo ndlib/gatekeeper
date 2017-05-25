@@ -1,0 +1,67 @@
+service: gatekeeper
+
+parameters:
+  ServiceName: $SERVICE-$STAGE
+  Stage: $STAGE
+  TemplateBucket: $DEPLOY_BUCKET
+  TemplateFolder: $DEPLOY_FOLDER
+
+tags:
+  Name: $SERVICE-$STAGE
+  Owner: $USER
+  Contact: $USER@nd.edu
+  Description: API Gateway JWT Authenticator
+
+cloudformations:
+  - root.yml
+  - kms.yml
+  - lambdas.yml
+  - gateway.yml
+  - roles.yml
+
+codeZips:
+  code:
+    - ../hesburgh
+    - ../lambdaRequests
+    - ../serviceRequests
+    - ../testdata
+    - ../alephQuery.py
+    - ../joinHandler.py
+    - ../serviceHandler.py
+
+lambdaEnv:
+  - name: $SERVICE-$STAGE-aleph
+    key: alias/$SERVICE-$STAGE
+    env:
+      -
+        name: ALEPH_PATH
+        env: ALEPH_PATH
+      -
+        name: ALEPH_URL
+        env: ALEPH_URL
+      -
+        name: ALEPH_ITEM_PATH
+        env: ALEPH_ITEM_PATH
+
+  - name: $SERVICE-$STAGE-alephQuery
+    key: alias/$SERVICE-$STAGE
+    env:
+      -
+        name: ALEPH_PATH
+        env: ALEPH_PATH
+      -
+        name: ALEPH_URL
+        env: ALEPH_URL
+      -
+        name: ALEPH_ITEM_PATH
+        env: ALEPH_ITEM_PATH
+
+  - name: $SERVICE-$STAGE-illiad
+    key: alias/$SERVICE-$STAGE
+    env:
+      -
+        name: ILLIAD_KEY
+        env: ILLIAD_KEY
+      -
+        name: ILLIAD_URL
+        env: ILLIAD_URL
