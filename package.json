@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "serverless-plugin-additional-stacks": "git+https://git@github.com/ndlib/serverless-plugin-additional-stacks.git#Write-templates"
-  }
-}

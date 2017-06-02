@@ -1,0 +1,157 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Portal Resources Lambdas"
+
+Parameters:
+  ServiceName:
+    Type: String
+    Description: The name of the service
+  RoleArn:
+    Type: String
+    Description: Arn of the execution role
+  SourceBucket:
+    Type: String
+    Description: The bucket the code is in
+  SourceKey:
+    Type: String
+    Description: The path to the code zip
+
+Outputs:
+  BorrowedArn:
+    Description: Borrowed lambda arn
+    Value: !GetAtt Borrowed.Arn
+
+  PendingArn:
+    Description: Pending lambda arn
+    Value: !GetAtt Pending.Arn
+
+  AlephQueryArn:
+    Description: AlephQuery lambda arn
+    Value: !GetAtt AlephQuery.Arn
+
+Resources:
+  Borrowed:
+    DependsOn:
+      - Aleph
+      - Illiad
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-borrowed
+      Description: Get borrowed resources for given netid
+      Runtime: python2.7
+      Handler: joinHandler.borrowed
+      Timeout: 30
+      Environment:
+        Variables:
+          ALEPH_FUNC:
+            Fn::GetAtt:
+              - Aleph
+              - Arn
+          ILLIAD_FUNC:
+            Fn::GetAtt:
+              - Illiad
+              - Arn
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+
+  Pending:
+    Type: AWS::Lambda::Function
+    DependsOn:
+      - Aleph
+      - Illiad
+    Properties:
+      FunctionName: !Sub ${ServiceName}-pending
+      Description: Get pending resources for given netid
+      Runtime: python2.7
+      Handler: joinHandler.pending
+      Timeout: 30
+      Environment:
+        Variables:
+          ALEPH_FUNC:
+            Fn::GetAtt:
+              - Aleph
+              - Arn
+          ILLIAD_FUNC:
+            Fn::GetAtt:
+              - Illiad
+              - Arn
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+
+  Aleph:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-aleph
+      Description: Get aleph resources for given netid
+      Runtime: python2.7
+      Handler: serviceHandler.aleph
+      Timeout: 15
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-bd3e9cc1
+          - sg-2e15b752
+        SubnetIds:
+          - subnet-fee3a4d3
+
+  AlephQuery:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-alephQuery
+      Description: Query aleph for a book
+      Runtime: python2.7
+      Handler: alephQuery.findItem
+      Timeout: 15
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-bd3e9cc1
+          - sg-2e15b752
+        SubnetIds:
+          - subnet-fee3a4d3
+
+  Illiad:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-illiad
+      Description: Get illiad resources for given netid
+      Runtime: python2.7
+      Handler: serviceHandler.illiad
+      Timeout: 30
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+
+  BorrowedPermission:
+    DependsOn: Borrowed
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Borrowed.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+
+  PendingPermission:
+    DependsOn: Pending
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Pending.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+
+  AlephQueryPermission:
+    DependsOn: AlephQuery
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AlephQuery.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com

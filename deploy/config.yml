@@ -1,0 +1,74 @@
+Service: gatekeeper
+
+Stacks:
+  Global:
+    Tags:
+      Name: $SERVICE-$STAGE
+      Owner: ${USER}
+      Contact: ${USER}@nd.edu
+  Single:
+    - Name: $SERVICE-$STAGE
+      Template: root.yml
+      Tags:
+        Description: API to get information from aleph and illiad
+      Parameters:
+        ServiceName: $SERVICE-$STAGE
+        Stage: $STAGE
+        TemplateBucket: $DEPLOY_BUCKET
+        TemplateFolder: $DEPLOY_FOLDER
+
+Artifacts:
+  Templates:
+    - root.yml
+    - kms.yml
+    - lambdas.yml
+    - gateway.yml
+    - roles.yml
+  Zips:
+    -
+      Name: code
+      Files:
+        - ../hesburgh/
+        - ../lambdaRequests/
+        - ../serviceRequests/
+        - ../testdata/
+        - ../alephQuery.py
+        - ../joinHandler.py
+        - ../serviceHandler.py
+
+LambdaEnv:
+  Global:
+    KMSKey: alias/$SERVICE-$STAGE
+  Single:
+    - FunctionName: $SERVICE-$STAGE-aleph
+      Environment:
+        -
+          Name: ALEPH_PATH
+          Value: ${ALEPH_PATH}
+        -
+          Name: ALEPH_URL
+          Value: ${ALEPH_URL}
+        -
+          Name: ALEPH_ITEM_PATH
+          Value: ${ALEPH_ITEM_PATH}
+
+    - FunctionName: $SERVICE-$STAGE-alephQuery
+      Environment:
+        -
+          Name: ALEPH_PATH
+          Value: ${ALEPH_PATH}
+        -
+          Name: ALEPH_URL
+          Value: ${ALEPH_URL}
+        -
+          Name: ALEPH_ITEM_PATH
+          Value: ${ALEPH_ITEM_PATH}
+
+    - FunctionName: $SERVICE-$STAGE-illiad
+      Environment:
+        -
+          Name: ILLIAD_KEY
+          Value: ${ILLIAD_KEY}
+        -
+          Name: ILLIAD_URL
+          Value: ${ILLIAD_URL}

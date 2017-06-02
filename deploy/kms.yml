@@ -1,18 +1,35 @@
-StackName: ${{self:custom.kmsStackName}}
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Portal Resources Key"
+
+Parameters:
+  ServiceName:
+    Type: String
+    Description: The name of the service
+  RoleArn:
+    Type: String
+    Description: Arn of the execution role
+
+Outputs:
+  KeyArn:
+    Description: KMS Arn
+    Value:
+      Fn::GetAtt:
+        - ServiceKey
+        - Arn
+
 Resources:
   ServiceKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: "KMS Key used for the ${{self:service}} service"
+      Description: "KMS Key used for the portalResources service"
       KeyPolicy:
-        Id: ${{self:custom.serviceStage}}
+        Id: !Ref ServiceName
         Statement:
           -
             Sid: "Enable IAM User Permissions"
             Effect: "Allow"
             Principal:
-              AWS:
-                Ref: "AWS::AccountId"
+              AWS: !Ref AWS::AccountId
             Action:
               - "kms:*"
             Resource: "*"
@@ -20,8 +37,7 @@ Resources:
             Sid: "Allow access for Key Administrators"
             Effect: "Allow"
             Principal:
-              AWS:
-                Fn::Sub: "arn:aws:iam::${AWS::AccountId}:role/superAdmin"
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/superAdmin"
             Action:
               - "kms:Create*"
               - "kms:Describe*"
@@ -42,8 +58,7 @@ Resources:
             Sid: "Allow use of the key"
             Effect: "Allow"
             Principal:
-              AWS:
-                Fn::ImportValue: ${{self:custom.rolesStackName}}-ExecutionRole
+              AWS: !Ref RoleArn
             Action:
               - "kms:Encrypt"
               - "kms:Decrypt"
@@ -67,6 +82,5 @@ Resources:
       - ServiceKey
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: "alias/${{self:custom.serviceStage}}"
-      TargetKeyId:
-        Ref: ServiceKey
+      AliasName: !Sub "alias/${ServiceName}"
+      TargetKeyId: !Ref ServiceKey
