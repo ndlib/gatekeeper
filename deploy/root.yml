@@ -34,7 +34,6 @@ Resources:
         ServiceName: !Ref ServiceName
         RoleArn: !GetAtt RolesStack.Outputs.RoleArn
 
-
   LambdasStack:
     Type: AWS::CloudFormation::Stack
     DependsOn: RolesStack
