@@ -35,10 +35,10 @@ class RequestType(object):
     except urllib2.HTTPError as e:
       heslog.error("%s" % e.code)
       heslog.error(e.read())
-      return "Error"
+      return None
     except urllib2.URLError as e:
       heslog.error(e.reason)
-      return "Error"
+      return None
 
     return response.read()
 

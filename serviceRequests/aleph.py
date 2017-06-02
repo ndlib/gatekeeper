@@ -17,6 +17,8 @@ class Aleph(RequestType):
 
 
   def _parseXML(self, xmlStr):
+    if not xmlStr:
+      return None
     def _childLoop(node):
       out = {}
       for child in node:
@@ -89,6 +91,8 @@ class Aleph(RequestType):
 
 
   def _format(self, parsed):
+    if not parsed:
+      return None
     return {
       'name': self._getZPart(parsed, 303, "name"),
       'address1': self._getZPart(parsed, 304, "address-1"),

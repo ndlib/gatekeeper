@@ -23,6 +23,8 @@ def findItem(event, context):
 
   aleph = Aleph(None)
   parsed = aleph.findItem(itemId)
+  if not parsed:
+    return _error()
 
   record = parsed.get("record", {}).get("metadata", {}).get("oai_marc", {})
   name = record.get("varfield_245_0", {}).get("subfield_a", "").strip()
