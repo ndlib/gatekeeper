@@ -19,14 +19,14 @@ Resources:
       Name: !Ref ServiceName
       Description: Artifact creator for gatekeeper
       ServiceRole: !Ref RoleArn
-      Artifacts: NO_ARTIFACTS
+      Artifacts:
+        Type: NO_ARTIFACTS
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/hesutils:latest
       Source:
         Type: GITHUB
-        Buildspec: codebuild/buildspec.yaml
         Location: https://github.com/ndlib/gatekeeper.git
         Auth:
           Type: OAUTH
