@@ -1,0 +1,35 @@
+Parameters:
+  # Branch:
+  #   Type: String
+  #   Description: The name of the branch in the repo
+  # OAuth:
+  #   Type: String
+  #   Description: The OAuth token to use for the repo
+  OutBucket:
+    Type: String
+    Description: The bucket to publish to
+  ServiceName:
+    Type: String
+    Description: The Service name
+  TemplateLoc:
+    Type: String
+    Description: The bucket url where these templates are stored
+
+Resources:
+  RolesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateLoc}/roles.yml
+      Parameters:
+        OutBucket: !Ref OutBucket
+        ServiceName: !Ref ServiceName
+
+  ResourcesStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: RolesStack
+    Properties:
+      TemplateURL: !Sub ${TemplateLoc}/resources.yml
+      Parameters:
+        RoleArn: !GetAtt RolesStack.Outputs.RoleArn
+        ServiceName: !Ref ServiceName
+        # OAuth: !Ref OAuth

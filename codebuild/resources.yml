@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Resources for CI stack"
+
+Parameters:
+  ServiceName:
+    Type: String
+    Description: The name of the service
+  # OAuth:
+  #   Type: String
+  #   Description: The OAuth token to use for the repo
+  RoleArn:
+    Type: String
+    Description: Arn of the Execution Role
+
+Resources:
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref ServiceName
+      Description: Artifact creator for gatekeeper
+      ServiceRole: !Ref RoleArn
+      Artifacts: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/hesutils:latest
+      Source:
+        Type: GITHUB
+        Buildspec: codebuild/buildspec.yaml
+        Location: https://github.com/ndlib/gatekeeper.git
+        Auth:
+          Type: OAUTH
+      TimeoutInMinutes: 10
