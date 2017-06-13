@@ -75,10 +75,15 @@ class Aleph(RequestType):
     elif status == "L":
       status = "Lost"
 
+    # '20170531' => 2017-05-31
+    dueDate = alephDir["due-date"]
+    if dueDate and len(dueDate) >= 8:
+      dueDate = "%s-%s-%s" % (dueDate[:4], dueDate[4:6], dueDate[6:8])
+
     item = {
       'title': self._getZPart(alephDir, 13, "title"),
       'author': self._getZPart(alephDir, 13, "author"),
-      'dueDate': alephDir["due-date"],
+      'dueDate': dueDate,
       'published': self._getZPart(alephDir, 13, "imprint"),
       'status': status,
     }

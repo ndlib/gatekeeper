@@ -31,6 +31,8 @@ Resources:
       ManagedPolicyArns:
         # View everything
         - arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
+        # Make logs
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
         - PolicyName: !Sub ${ServiceName}-BucketPermissions
           PolicyDocument:
@@ -42,3 +44,12 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:s3:::${OutBucket}"
                   - !Sub "arn:aws:s3:::${OutBucket}/*"
+        - PolicyName: !Sub ${ServiceName}-CloudformationPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Resource: "*"
+                Action:
+                  - "cloudformation:ValidateTemplate"

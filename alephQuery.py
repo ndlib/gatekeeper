@@ -27,9 +27,20 @@ def findItem(event, context):
     return _error()
 
   record = parsed.get("record", {}).get("metadata", {}).get("oai_marc", {})
-  name = record.get("varfield_245_0", {}).get("subfield_a", "").strip()
-  desc = record.get("varfield_520", {}).get("subfield_a", "").strip()
-  url = record.get("varfield_856_0", {}).get("subfield_u", "").strip()
+  name = record.get("varfield_245_0", {})
+  if isinstance(name, list):
+    name = name[0]
+  name = name.get("subfield_a", "").strip()
+
+  desc = record.get("varfield_520", {})
+  if isinstance(desc, list):
+    desc = desc[0]
+  desc = desc.get("subfield_a", "").strip()
+
+  url = record.get("varfield_856_0", {})
+  if isinstance(url, list):
+    url = url[0]
+  url = url.get("subfield_u", "").strip()
 
   return _success({
       "name": name,

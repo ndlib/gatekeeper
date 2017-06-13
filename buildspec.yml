@@ -1,9 +1,5 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_DEFAULT_REGION: "us-east-1"
-
 phases:
   install:
     commands:
@@ -11,4 +7,4 @@ phases:
 
   build:
     commands:
-      - cd codebuild && hesdeploy -s dev --publishOnly # --deployBucket [bucketname]
+      - cd deploy && hesdeploy -s dev --publishOnly
