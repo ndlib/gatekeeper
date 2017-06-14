@@ -15,22 +15,28 @@ class Illiad(RequestType):
 
 
   def _makeIlliadItem(self, data):
+    if data.get("RequestType") == "Loan":
+      title = data.get("LoanTitle")
+      author = data.get("LoanAuthor")
+      published = data.get("LoanDate")
+    else:
+      title = data.get("PhotoArticleTitle")
+      author = data.get("PhotoArticleAuthor")
+      published = data.get("PhotoJournalYear")
+
+    # 2017-06-28T00:00:00 => 2017-06-28
+    dueDate = data.get("DueDate", "")
+    if dueDate:
+      dueDate = dueDate.split("T")[0]
+
     return {
-      "title": data.get("LoanTitle", None),
-      "journalTitle": data.get("PhotoJournalTitle", None),
-      "journalVolume": data.get("PhotoJournalVolume", None), # can hide
-      "journalIssue": data.get("PhotoJournalIssue", None), #
-      "journalMonth": data.get("PhotoJournalMonth", None), #
-      "journalYear": data.get("PhotoJournalYear", None),
-      "articleAuthor": data.get("PhotoArticleAuthor", None),
-      "articleTitle": data.get("PhotoArticleTitle", None),
-      "author": data.get("LoanAuthor", None),
-      "publishedDate": data.get("LoanDate", None),
-      "requestType": data.get("RequestType", None), #probably doesn't need to display - loan/photocopy
-      "dueDate": data.get("DueDate", None),
+      "title": title,
+      "author": author,
+      "dueDate": dueDate,
+      "published": published,
+      "status": data.get("TransactionStatus", None),
+
       "transactionNumber": data.get("TransactionNumber", None),
-      "transactionStatus": data.get("TransactionStatus", None), # only in pending
-      "pages": data.get("Pages", None),
       # pickup location -- in patron record
       # artickles need link to scanned copy
     }

@@ -4,8 +4,8 @@ Stacks:
   Global:
     Tags:
       Name: $SERVICE-$STAGE
-      Owner: ${USER}
-      Contact: ${USER}@nd.edu
+      Owner: hbeachey
+      Contact: hbeachey@nd.edu
   Single:
     - Name: $SERVICE-$STAGE
       Template: root.yml

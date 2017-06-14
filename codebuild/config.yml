@@ -5,16 +5,13 @@ Stacks:
     - Name: $SERVICE-$STAGE
       Template: root.yml
       Parameters:
-        # Repo: gatekeeper
-        # Branch: master
-        # OAuth: ${OAUTH}
         OutBucket: $DEPLOY_BUCKET
         ServiceName: $SERVICE-$STAGE
         TemplateLoc: https://s3.amazonaws.com/$DEPLOY_BUCKET/$DEPLOY_FOLDER
       Tags:
         Name: $SERVICE-$STAGE
-        Owner: ${USER}
-        Contact: ${USER}@nd.edu
+        Owner: hbeachey
+        Contact: hbeachey@nd.edu
         Description: CI to publish gatekeeper files
         InceptDate: $TIMESTAMP
 
