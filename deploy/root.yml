@@ -15,6 +15,10 @@ Parameters:
     Type: String
     Description: Location of template files
 
+Outputs:
+  GatewayId:
+    Value: !GetAtt GatewayStack.Outputs.GatewayId
+
 Resources:
   RolesStack:
     Type: AWS::CloudFormation::Stack
