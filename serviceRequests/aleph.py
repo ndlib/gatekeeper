@@ -76,6 +76,9 @@ class Aleph(RequestType):
     elif status == "L":
       status = "Lost"
 
+    if isHolds:
+      status = self._getZPart(alephDir, 37, "status")
+
     # '20170531' => 2017-05-31
     dueDate = alephDir.get("due-date")
     if dueDate and len(dueDate) >= 8:
