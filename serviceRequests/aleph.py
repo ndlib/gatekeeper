@@ -14,6 +14,7 @@ class Aleph(RequestType):
 
     self._setCallback('checkedOut', self.checkedOut)
     self._setCallback('user', self.userData)
+    self._setCallback('pending', self.pending)
 
 
   def _parseXML(self, xmlStr):
@@ -76,7 +77,7 @@ class Aleph(RequestType):
       status = "Lost"
 
     # '20170531' => 2017-05-31
-    dueDate = alephDir["due-date"]
+    dueDate = alephDir.get("due-date")
     if dueDate and len(dueDate) >= 8:
       dueDate = "%s-%s-%s" % (dueDate[:4], dueDate[4:6], dueDate[6:8])
 
@@ -147,10 +148,33 @@ class Aleph(RequestType):
       stringResponse = self._makeReq(url, headers)
 
     parsed = self._parseXML(stringResponse)
-    # 'holds': [ self._makeAlephItem(i, True) for i in parsed.get('item-h', []) ],
 
     items = parsed.get('item-l', [])
     if type(items) is dict:
       items = [items]
     return [ self._makeAlephItem(i) for i in items ]
+
+
+  def pending(self):
+    path = hesutil.getEnv("ALEPH_PATH", throw=True)
+    if path is None:
+      return None;
+
+    headers = {
+      'Content-Type': 'xml',
+    }
+
+    test = hestest.get(self.netid)
+    if test:
+      stringResponse = test.get("aleph", "")
+    else:
+      url = self._formatUrl(self.url, path)
+      stringResponse = self._makeReq(url, headers)
+
+    parsed = self._parseXML(stringResponse)
+
+    items = parsed.get('item-h', [])
+    if type(items) is dict:
+      items = [items]
+    return [ self._makeAlephItem(i, True) for i in items ]
 

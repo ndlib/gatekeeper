@@ -16,6 +16,8 @@ Stacks:
         Stage: $STAGE
         TemplateBucket: $DEPLOY_BUCKET
         TemplateFolder: $DEPLOY_FOLDER
+      Gateways:
+        - GatewayId
 
 Artifacts:
   Templates:

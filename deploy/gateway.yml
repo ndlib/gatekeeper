@@ -18,6 +18,10 @@ Parameters:
     Type: String
     Description: Arn for the AlephQuery Lambda
 
+Outputs:
+  GatewayId:
+    Value: !Ref Gateway
+
 Resources:
   GatewayStage:
     Type: AWS::ApiGateway::Deployment
