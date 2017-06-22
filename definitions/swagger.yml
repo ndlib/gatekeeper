@@ -7,13 +7,12 @@ info:
   version: "1.0.0"
 
 # the domain of the service
-host: fwyleg0kcg.execute-api.us-east-1.amazonaws.com
 schemes:
   - https
-basePath: /dev/items
+basePath: /dev
 
 paths:
-  /borrowed:
+  /items/borrowed:
     get:
       summary: Get all borrowed resources for the user
       security:
@@ -38,11 +37,9 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /pending:
+  /items/pending:
     get:
       summary: Get all pending resources for the user
-      description: |
-        Log into CAS and return a JWT token containing user information
       security:
         - jwt: []
       responses:
@@ -65,6 +62,27 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /aleph/{systemId}:
+    get:
+      summary: Get information about an aleph item by system number
+      responses:
+        200:
+          description: Aleph data
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+          schema:
+            $ref: '#/definitions/AlephInfo'
+        404:
+          description: The item was not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
 securityDefinitions:
   jwt:
@@ -73,6 +91,15 @@ securityDefinitions:
     in: "header"
 
 definitions:
+  AlephInfo:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      purl:
+        type: string
   Item:
     type: object
     properties:
