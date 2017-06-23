@@ -9,8 +9,6 @@ info:
 # the domain of the service
 schemes:
   - https
-basePath: /dev
-
 paths:
   /items/borrowed:
     get:
