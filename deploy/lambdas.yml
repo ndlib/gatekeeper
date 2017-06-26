@@ -14,6 +14,12 @@ Parameters:
   SourceKey:
     Type: String
     Description: The path to the code zip
+  AlephSecurityGroups:
+    Type: CommaDelimitedList
+    Description: The security group(s) required for aleph
+  AlephSubnets:
+    Type: CommaDelimitedList
+    Description: The subnet(s) required for aleph
 
 Outputs:
   BorrowedArn:
@@ -94,11 +100,8 @@ Resources:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
       VpcConfig:
-        SecurityGroupIds:
-          - sg-bd3e9cc1
-          - sg-2e15b752
-        SubnetIds:
-          - subnet-fee3a4d3
+        SecurityGroupIds: !Ref AlephSecurityGroups
+        SubnetIds: !Ref AlephSubnets
 
   AlephQuery:
     Type: AWS::Lambda::Function
@@ -113,11 +116,8 @@ Resources:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
       VpcConfig:
-        SecurityGroupIds:
-          - sg-bd3e9cc1
-          - sg-2e15b752
-        SubnetIds:
-          - subnet-fee3a4d3
+        SecurityGroupIds: !Ref AlephSecurityGroups
+        SubnetIds: !Ref AlephSubnets
 
   Illiad:
     Type: AWS::Lambda::Function

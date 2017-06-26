@@ -14,6 +14,12 @@ Parameters:
   TemplateFolder:
     Type: String
     Description: Location of template files
+  AlephSecurityGroups:
+    Type: String
+    Description: The security group(s) required for aleph
+  AlephSubnets:
+    Type: String
+    Description: The subnet(s) required for aleph
 
 Outputs:
   GatewayId:
@@ -49,6 +55,8 @@ Resources:
         SourceBucket: !Ref TemplateBucket
         SourceKey: !Sub ${TemplateFolder}/code.zip
         RoleArn: !GetAtt RolesStack.Outputs.RoleArn
+        AlephSecurityGroups: !Ref AlephSecurityGroups
+        AlephSubnets: !Ref AlephSubnets
 
   GatewayStack:
     Type: AWS::CloudFormation::Stack
