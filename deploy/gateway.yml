@@ -17,6 +17,9 @@ Parameters:
   AlephQueryArn:
     Type: String
     Description: Arn for the AlephQuery Lambda
+  AuthorizerName:
+    Type: String
+    Description: The name of the authorizer lambda
 
 Outputs:
   GatewayId:
@@ -232,7 +235,7 @@ Resources:
                     - lambda:path/2015-03-31/functions/arn:aws:lambda
                     - !Ref AWS::Region
                     - !Ref AWS::AccountId
-                    - !Sub function:jwt-auth-${Stage}/invocations
+                    - !Sub function:${AuthorizerName}/invocations
               authorizerResultTtlInSeconds: 300
               type: "token"
         definitions:

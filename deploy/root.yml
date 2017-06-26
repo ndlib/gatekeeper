@@ -20,6 +20,10 @@ Parameters:
   AlephSubnets:
     Type: String
     Description: The subnet(s) required for aleph
+  AuthorizerName:
+    Type: String
+    Description: Name of the lambda authorizer
+    Default: "jwt-auth-prod"
 
 Outputs:
   GatewayId:
@@ -70,3 +74,4 @@ Resources:
         BorrowedArn: !GetAtt LambdasStack.Outputs.BorrowedArn
         PendingArn: !GetAtt LambdasStack.Outputs.PendingArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
+        AuthorizerName: !Ref AuthorizerName

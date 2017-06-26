@@ -18,6 +18,7 @@ Stacks:
         TemplateFolder: $DEPLOY_FOLDER
         AlephSecurityGroups: "sg-bd3e9cc1,sg-2e15b752"
         AlephSubnets: subnet-fee3a4d3
+        AuthorizerName: ${AUTHORIZER_NAME}
       Gateways:
         - GatewayId
 
