@@ -63,6 +63,12 @@ paths:
   /aleph/{systemId}:
     get:
       summary: Get information about an aleph item by system number
+      parameters:
+        - in: path
+          name: systemId
+          type: integer
+          required: true
+          description: The system number
       responses:
         200:
           description: Aleph data
