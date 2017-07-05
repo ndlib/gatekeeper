@@ -117,6 +117,7 @@ class Aleph(RequestType):
     path = hesutil.getEnv("ALEPH_ITEM_PATH", throw=True)
 
     url = self.url + path.replace("<<doc>>", doc)
+    heslog.info("Requesting document %s" % doc)
     stringResponse = self._makeReq(url, {})
     return self._parseXML(stringResponse)
 
@@ -143,8 +144,10 @@ class Aleph(RequestType):
       'Content-Type': 'xml',
     }
 
+    heslog.info("Requesting checked out items")
     test = hestest.get(self.netid)
     if test:
+      heslog.info("Got a test netid")
       stringResponse = test.get("aleph", "")
     else:
       url = self._formatUrl(self.url, path)
@@ -167,8 +170,10 @@ class Aleph(RequestType):
       'Content-Type': 'xml',
     }
 
+    heslog.info("Requesting pending items")
     test = hestest.get(self.netid)
     if test:
+      heslog.info("Got a test netid")
       stringResponse = test.get("aleph", "")
     else:
       url = self._formatUrl(self.url, path)

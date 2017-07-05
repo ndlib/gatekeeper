@@ -23,6 +23,7 @@ def findItem(event, context):
 
   aleph = Aleph(None)
   parsed = aleph.findItem(itemId)
+  heslog.info("Got %s from aleph" % parsed)
   if not parsed:
     return _error()
 
