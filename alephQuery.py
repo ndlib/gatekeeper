@@ -33,10 +33,20 @@ def findItem(event, context):
     name = name[0]
   name = name.get("subfield_a", "").strip()
 
-  desc = record.get("varfield_520", {})
-  if isinstance(desc, list):
-    desc = desc[0]
-  desc = desc.get("subfield_a", "").strip()
+  # Description is more complicated. We need 520 which could just be 1 record or multiple
+  # If there's a 520 with subfield 9 of value g, that's the one we want
+  recordDescription = record.get("varfield_520", {})
+  description = None
+  if isinstance(recordDescription, list):
+    for i in recordDescription:
+      if i.get("subfield_9", "") == "g":
+        description = i
+        break
+    if not description:
+      description = recordDescription[0]
+  else:
+    description = recordDescription
+  description = description.get("subfield_a", "").strip()
 
   url = record.get("varfield_856_0", {})
   if isinstance(url, list):
@@ -45,6 +55,6 @@ def findItem(event, context):
 
   return _success({
       "name": name,
-      "description": desc,
+      "description": description,
       "purl": url,
     })
