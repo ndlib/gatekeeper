@@ -1,17 +1,25 @@
-from hesburgh import heslog
+from hesburgh import heslog, hesutil
 from serviceRequests.aleph import Aleph
 import json
 
 def _error():
   return {
     "statusCode": 404,
+    "headers": {
+      "x-nd-version": hesutil.getEnv("VERSION", 0),
+    },
   }
+
 
 def _success(data):
   return {
     "statusCode": 200,
-    "body": json.dumps(data)
+    "body": json.dumps(data),
+    "headers": {
+      "x-nd-version": hesutil.getEnv("VERSION", 0),
+    },
   }
+
 
 def findItem(event, context):
   itemId = event.get("pathParameters", {}).get("systemId")
