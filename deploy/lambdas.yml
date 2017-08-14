@@ -25,14 +25,15 @@ Outputs:
   BorrowedArn:
     Description: Borrowed lambda arn
     Value: !GetAtt Borrowed.Arn
-
   PendingArn:
     Description: Pending lambda arn
     Value: !GetAtt Pending.Arn
-
   AlephQueryArn:
     Description: AlephQuery lambda arn
     Value: !GetAtt AlephQuery.Arn
+  AlephRenewArn:
+    Description: AlephRenew lambda arn
+    Value: !GetAtt AlephRenew.Arn
 
 Resources:
   Borrowed:
@@ -60,6 +61,30 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
+  BorrowedPermission:
+    DependsOn: Borrowed
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Borrowed.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  BorrowedLogGroup:
+    DependsOn: Borrowed
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ServiceName}-borrowed
+      RetentionInDays: 30
+  BorrowedErrorFilter:
+    DependsOn: BorrowedLogGroup
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: "[date=*-*-*, time, state=*ERROR*,]"
+      LogGroupName: !Ref BorrowedLogGroup
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "Hesburgh"
+          MetricName: "Errors"
 
   Pending:
     Type: AWS::Lambda::Function
@@ -86,6 +111,30 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
+  PendingPermission:
+    DependsOn: Pending
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Pending.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  PendingLogGroup:
+    DependsOn: Pending
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ServiceName}-pending
+      RetentionInDays: 30
+  PendingErrorFilter:
+    DependsOn: PendingLogGroup
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: "[date=*-*-*, time, state=*ERROR*,]"
+      LogGroupName: !Ref PendingLogGroup
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "Hesburgh"
+          MetricName: "Errors"
 
   Aleph:
     Type: AWS::Lambda::Function
@@ -94,7 +143,8 @@ Resources:
       Description: Get aleph resources for given netid
       Runtime: python2.7
       Handler: serviceHandler.aleph
-      Timeout: 15
+      MemorySize: 512
+      Timeout: 30
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
@@ -102,6 +152,23 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
+  AlephLogGroup:
+    DependsOn: Aleph
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ServiceName}-aleph
+      RetentionInDays: 30
+  AlephErrorFilter:
+    DependsOn: AlephLogGroup
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: "[date=*-*-*, time, state=*ERROR*,]"
+      LogGroupName: !Ref AlephLogGroup
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "Hesburgh"
+          MetricName: "Errors"
 
   AlephQuery:
     Type: AWS::Lambda::Function
@@ -110,7 +177,8 @@ Resources:
       Description: Query aleph for a book
       Runtime: python2.7
       Handler: alephQuery.findItem
-      Timeout: 15
+      MemorySize: 512
+      Timeout: 30
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
@@ -118,6 +186,71 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
+  AlephQueryPermission:
+    DependsOn: AlephQuery
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AlephQuery.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  AlephQueryLogGroup:
+    DependsOn: AlephQuery
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ServiceName}-alephQuery
+      RetentionInDays: 30
+  AlephQueryErrorFilter:
+    DependsOn: AlephQueryLogGroup
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: "[date=*-*-*, time, state=*ERROR*,]"
+      LogGroupName: !Ref AlephQueryLogGroup
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "Hesburgh"
+          MetricName: "Errors"
+
+  AlephRenew:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-alephRenew
+      Description: Renew aleph item
+      Runtime: python2.7
+      Handler: alephQuery.renewItem
+      Timeout: 30
+      MemorySize: 512
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+      VpcConfig:
+        SecurityGroupIds: !Ref AlephSecurityGroups
+        SubnetIds: !Ref AlephSubnets
+  AlephRenewPermission:
+    DependsOn: AlephQuery
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AlephRenew.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  AlephRenewLogGroup:
+    DependsOn: AlephRenew
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ServiceName}-alephRenew
+      RetentionInDays: 30
+  AlephRenewErrorFilter:
+    DependsOn: AlephRenewLogGroup
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: "[date=*-*-*, time, state=*ERROR*,]"
+      LogGroupName: !Ref AlephRenewLogGroup
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "Hesburgh"
+          MetricName: "Errors"
 
   Illiad:
     Type: AWS::Lambda::Function
@@ -131,27 +264,20 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
-
-  BorrowedPermission:
-    DependsOn: Borrowed
-    Type: AWS::Lambda::Permission
+  IlliadLogGroup:
+    DependsOn: Illiad
+    Type: AWS::Logs::LogGroup
     Properties:
-      FunctionName: !GetAtt Borrowed.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-
-  PendingPermission:
-    DependsOn: Pending
-    Type: AWS::Lambda::Permission
+      LogGroupName: !Sub /aws/lambda/${ServiceName}-illiad
+      RetentionInDays: 30
+  IlliadErrorFilter:
+    DependsOn: IlliadLogGroup
+    Type: AWS::Logs::MetricFilter
     Properties:
-      FunctionName: !GetAtt Pending.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-
-  AlephQueryPermission:
-    DependsOn: AlephQuery
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt AlephQuery.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
+      FilterPattern: "[date=*-*-*, time, state=*ERROR*,]"
+      LogGroupName: !Ref IlliadLogGroup
+      MetricTransformations:
+        -
+          MetricValue: "1"
+          MetricNamespace: "Hesburgh"
+          MetricName: "Errors"

@@ -7,6 +7,12 @@ def _error():
     "statusCode": 404,
   }
 
+def _500(data):
+  return {
+    "statusCode": 500,
+    "body": json.dumps(data)
+  }
+
 def _success(data):
   return {
     "statusCode": 200,
@@ -58,3 +64,26 @@ def findItem(event, context):
       "description": description,
       "purl": url,
     })
+
+
+def renewItem(event, context):
+  params = event.get("headers", {})
+  barcode = params.get("barcode")
+  heslog.addLambdaContext(event, context, barcode=barcode)
+
+  alephId = params.get("aleph-id")
+
+  if not barcode:
+    heslog.error("No barcode provided")
+    return _error()
+
+  if not alephId:
+    heslog.error("No aleph id provided")
+    return _error()
+
+  aleph = Aleph(alephId)
+  renewData = aleph.renew(barcode)
+  heslog.info("Returning %s" % renewData)
+  if renewData.get("renewStatus") >= 400:
+    return _500(renewData)
+  return _success(renewData)

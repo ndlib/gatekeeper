@@ -90,6 +90,7 @@ class Aleph(RequestType):
       'dueDate': dueDate,
       'published': self._getZPart(alephDir, 13, "imprint"),
       'status': status,
+      'barcode': self._getZPart(alephDir, 30, "barcode"),
     }
 
     if isHolds:
@@ -110,6 +111,7 @@ class Aleph(RequestType):
       'telephone2': self._getZPart(parsed, 304, "telephone-2"),
       'homeLibrary': self._getZPart(parsed, 303, "home-library"),
       'status': self._getZPart(parsed, 305, "bor-status"),
+      'alephId': self._getZPart(parsed, 304, "id"),
     }
 
 
@@ -133,6 +135,42 @@ class Aleph(RequestType):
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
     return self._format(parsed)
+
+
+  def renew(self, barcode):
+    path = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True)
+
+    heslog.info("Renewing item")
+    url = self._formatUrl(self.url, path).replace("<<barcode>>", barcode)
+    stringResponse = self._makeReq(url, {})
+    parsed = self._parseXML(stringResponse)
+
+    def status(code, text = None):
+      ret = { "renewStatus": code}
+      if text:
+        ret["statusText"] = text
+      return ret
+
+    # handle aleph errors
+    error = parsed.get("error", "")
+    if "New due date must be bigger than current's loan due date" in error:
+      return status(304)
+    if "can not be found in library" in error or "is not Loaned in library" in error:
+      return status(404)
+    if "has no Local Information" in error or "Item provided is not loaned by given bor_id" in error:
+      return status(500, "Error in user information")
+
+    error = parsed.get("error-text-1", "")
+    if "Renewal limit reached" in error:
+      return status(500, error)
+
+    error = parsed.get("error-text-2", "")
+    if "Loan has been declared lost." in error:
+      return status(500, error)
+
+    ret = status(200)
+    ret["dueDate"] = parsed.get("renew", {}).get("due-date")
+    return ret
 
 
   def checkedOut(self):

@@ -17,6 +17,9 @@ Parameters:
   AlephQueryArn:
     Type: String
     Description: Arn for the AlephQuery Lambda
+  AlephRenewArn:
+    Type: String
+    Description: Arn for the AlephRenew Lambda
   AuthorizerName:
     Type: String
     Description: The name of the authorizer lambda
@@ -220,6 +223,34 @@ Resources:
                   application/json: "{statusCode:200}"
                 passthroughBehavior: "when_no_match"
                 type: "mock"
+          /aleph/renew:
+            post:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              parameters:
+              - name: "barcode"
+                in: "header"
+                required: true
+                type: "string"
+                description: "The barcode of the item to renew"
+              - name: "alephId"
+                in: "header"
+                required: true
+                type: "string"
+                description: "The alephId of the user doing the renewal"
+              responses:
+                '200':
+                  description: 'Item successfully renewed'
+                '500':
+                  description: 'Item was not renewed'
+              x-amazon-apigateway-request-validator: "params-only"
+              x-amazon-apigateway-integration:
+                passthroughBehavior: 'when_no_match'
+                httpMethod: 'POST'
+                type: 'aws_proxy'
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AlephRenewArn}/invocations'
         securityDefinitions:
           jwt:
             type: "apiKey"
