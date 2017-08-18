@@ -160,12 +160,12 @@ class Aleph(RequestType):
     if "has no Local Information" in error or "Item provided is not loaned by given bor_id" in error:
       return status(500, "Error in user information")
 
-    error = parsed.get("error-text-1", "")
-    if "Renewal limit reached" in error:
+    error = parsed.get("error-text-1")
+    if error:
       return status(500, error)
 
-    error = parsed.get("error-text-2", "")
-    if "Loan has been declared lost." in error:
+    error = parsed.get("error-text-2")
+    if error:
       return status(500, error)
 
     ret = status(200)

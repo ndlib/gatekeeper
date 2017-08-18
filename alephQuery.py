@@ -5,18 +5,21 @@ import json
 def _error():
   return {
     "statusCode": 404,
+    "headers": { "Access-Control-Allow-Origin": "*" },
   }
 
 def _500(data):
   return {
-    "statusCode": 500,
-    "body": json.dumps(data)
+    "statusCode": 200,
+    "body": json.dumps(data),
+    "headers": { "Access-Control-Allow-Origin": "*" },
   }
 
 def _success(data):
   return {
     "statusCode": 200,
-    "body": json.dumps(data)
+    "body": json.dumps(data),
+    "headers": { "Access-Control-Allow-Origin": "*" },
   }
 
 def findItem(event, context):
