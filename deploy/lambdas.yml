@@ -20,19 +20,94 @@ Parameters:
   AlephSubnets:
     Type: CommaDelimitedList
     Description: The subnet(s) required for aleph
+  LogRetention:
+    Type: Number
+    Description: days
+    Default: 7
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+  BorrowedTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 30
+  BorrowedMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 128
+  PendingTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 30
+  PendingMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 128
+  AlephQueryTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 15
+  AlephQueryMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 128
+  AlephTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 15
+  AlephMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 128
+  IlliadTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 30
+  IlliadMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 128
 
 Outputs:
   BorrowedArn:
     Description: Borrowed lambda arn
     Value: !GetAtt Borrowed.Arn
 
+  BorrowedLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${BorrowedLogs}
+
   PendingArn:
     Description: Pending lambda arn
     Value: !GetAtt Pending.Arn
 
+  PendingLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${PendingLogs}
+
   AlephQueryArn:
     Description: AlephQuery lambda arn
     Value: !GetAtt AlephQuery.Arn
+
+  AlephQueryLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephQueryLogs}
+
+  AlephLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephLogs}
+
+  IlliadLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${IlliadLogs}
 
 Resources:
   Borrowed:
@@ -44,8 +119,9 @@ Resources:
       FunctionName: !Sub ${ServiceName}-borrowed
       Description: Get borrowed resources for given netid
       Runtime: python2.7
+      Timeout: !Ref BorrowedTimeout
+      MemorySize: !Ref BorrowedMemorySize
       Handler: joinHandler.borrowed
-      Timeout: 30
       Environment:
         Variables:
           ALEPH_FUNC:
@@ -60,6 +136,12 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
+
+  BorrowedLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Borrowed}
+      RetentionInDays: !Ref LogRetention
 
   Pending:
     Type: AWS::Lambda::Function
@@ -70,8 +152,9 @@ Resources:
       FunctionName: !Sub ${ServiceName}-pending
       Description: Get pending resources for given netid
       Runtime: python2.7
+      Timeout: !Ref PendingTimeout
+      MemorySize: !Ref PendingMemorySize
       Handler: joinHandler.pending
-      Timeout: 30
       Environment:
         Variables:
           ALEPH_FUNC:
@@ -87,14 +170,21 @@ Resources:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
 
+  PendingLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Pending}
+      RetentionInDays: !Ref LogRetention
+
   Aleph:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${ServiceName}-aleph
       Description: Get aleph resources for given netid
       Runtime: python2.7
+      Timeout: !Ref AlephTimeout
+      MemorySize: !Ref AlephMemorySize
       Handler: serviceHandler.aleph
-      Timeout: 15
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
@@ -102,6 +192,12 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
+
+  AlephLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Aleph}
+      RetentionInDays: !Ref LogRetention
 
   AlephQuery:
     Type: AWS::Lambda::Function
@@ -109,8 +205,9 @@ Resources:
       FunctionName: !Sub ${ServiceName}-alephQuery
       Description: Query aleph for a book
       Runtime: python2.7
+      Timeout: !Ref AlephQueryTimeout
+      MemorySize: !Ref AlephQueryMemorySize
       Handler: alephQuery.findItem
-      Timeout: 15
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
@@ -119,18 +216,31 @@ Resources:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
 
+  AlephQueryLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AlephQuery}
+      RetentionInDays: !Ref LogRetention
+
   Illiad:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${ServiceName}-illiad
       Description: Get illiad resources for given netid
       Runtime: python2.7
+      Timeout: !Ref IlliadTimeout
+      MemorySize: !Ref IlliadMemorySize
       Handler: serviceHandler.illiad
-      Timeout: 30
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
+
+  IlliadLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Illiad}
+      RetentionInDays: !Ref LogRetention
 
   BorrowedPermission:
     DependsOn: Borrowed
