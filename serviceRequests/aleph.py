@@ -66,6 +66,13 @@ class Aleph(RequestType):
     return directory.get(zname, {}).get(zname + "-%s" % index, None)
 
 
+  def _formatDueDate(self, dueStr):
+    # '20170531' => 2017-05-31
+    if dueStr and len(dueStr) >= 8:
+      return "%s-%s-%s" % (dueStr[:4], dueStr[4:6], dueStr[6:8])
+    return dueStr
+
+
   def _makeAlephItem(self, alephDir, isHolds = False):
     # no due for holds
     status = self._getZPart(alephDir, 36, "status")
@@ -79,10 +86,7 @@ class Aleph(RequestType):
     if isHolds:
       status = self._getZPart(alephDir, 37, "status")
 
-    # '20170531' => 2017-05-31
-    dueDate = alephDir.get("due-date")
-    if dueDate and len(dueDate) >= 8:
-      dueDate = "%s-%s-%s" % (dueDate[:4], dueDate[4:6], dueDate[6:8])
+    dueDate = self._formatDueDate(alephDir.get("due-date"))
 
     item = {
       'title': self._getZPart(alephDir, 13, "title"),
@@ -144,6 +148,7 @@ class Aleph(RequestType):
     url = self._formatUrl(self.url, path).replace("<<barcode>>", barcode)
     stringResponse = self._makeReq(url, {})
     parsed = self._parseXML(stringResponse)
+    heslog.debug(parsed)
 
     def status(code, text = None):
       ret = { "renewStatus": code}
@@ -169,7 +174,7 @@ class Aleph(RequestType):
       return status(500, error)
 
     ret = status(200)
-    ret["dueDate"] = parsed.get("renew", {}).get("due-date")
+    ret["dueDate"] = self._formatDueDate(parsed.get("due-date"))
     return ret
 
 
