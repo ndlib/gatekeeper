@@ -1,8 +1,30 @@
-from hesburgh import heslog, hestest
+from hesburgh import heslog, hestest, hesutil
 import json
 from lambdaRequests.requester import Requester
 
 hestest.init(__file__, "testdata")
+
+def _success(data):
+  heslog.info("Success")
+  return {
+    "statusCode": 200,
+    "headers": {
+      "Access-Control-Allow-Origin" : "*", # Required for CORS support to work
+      "x-nd-version": hesutil.getEnv("VERSION", 0),
+    },
+    "body": json.dumps(data)
+  }
+
+
+def _error():
+  return {
+    "statusCode": 404,
+    "headers": {
+      "Access-Control-Allow-Origin" : "*", # Required for CORS support to work
+      "x-nd-version": hesutil.getEnv("VERSION", 0),
+    },
+  }
+
 
 # need to figure out what is secret in aleph + how to handle secrets in lambda
 def borrowed(event, context):
@@ -12,21 +34,14 @@ def borrowed(event, context):
 
   if netid is None:
     heslog.error("No netid found")
-    return {"statusCode": 404}
+    return _error()
 
   trace = context.aws_request_id if context else None
 
   requester = Requester(netid, trace)
   data = requester.checkedOut()
 
-  heslog.info("Success")
-  response = {
-    "statusCode": 200,
-    "headers": {
-      "Access-Control-Allow-Origin" : "*", # Required for CORS support to work
-    },
-    "body": json.dumps(data)
-  }
+  response = _success(data)
 
   return response
 
@@ -38,20 +53,13 @@ def pending(event, context):
 
   if netid is None:
     heslog.error("No netid found")
-    return {"statusCode": 404}
+    return _error()
 
   trace = context.aws_request_id if context else None
 
   requester = Requester(netid, trace)
   data = requester.pending()
 
-  heslog.info("Success")
-  response = {
-    "statusCode": 200,
-    "headers": {
-      "Access-Control-Allow-Origin" : "*", # Required for CORS support to work
-    },
-    "body": json.dumps(data)
-  }
+  response = _success(data)
 
   return response

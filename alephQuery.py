@@ -1,25 +1,24 @@
-from hesburgh import heslog
+from hesburgh import heslog, hesutil
 from serviceRequests.aleph import Aleph
 import json
 
 def _error():
   return {
     "statusCode": 404,
-    "headers": { "Access-Control-Allow-Origin": "*" },
-  }
-
-def _500(data):
-  return {
-    "statusCode": 200,
-    "body": json.dumps(data),
-    "headers": { "Access-Control-Allow-Origin": "*" },
+    "headers": {
+      "Access-Control-Allow-Origin": "*",
+      "x-nd-version": hesutil.getEnv("VERSION", 0),
+    },
   }
 
 def _success(data):
   return {
     "statusCode": 200,
     "body": json.dumps(data),
-    "headers": { "Access-Control-Allow-Origin": "*" },
+    "headers": {
+      "Access-Control-Allow-Origin": "*",
+      "x-nd-version": hesutil.getEnv("VERSION", 0),
+    },
   }
 
 def findItem(event, context):
@@ -34,6 +33,7 @@ def findItem(event, context):
   parsed = aleph.findItem(itemId)
   heslog.info("Got %s from aleph" % parsed)
   if not parsed:
+    heslog.error("Nothing in parsed information")
     return _error()
 
   record = parsed.get("record", {}).get("metadata", {}).get("oai_marc", {})
@@ -86,7 +86,5 @@ def renewItem(event, context):
 
   aleph = Aleph(alephId)
   renewData = aleph.renew(barcode)
-  heslog.info("Returning %s" % renewData)
-  if renewData.get("renewStatus") >= 400:
-    return _500(renewData)
+  heslog.info("Returning success %s" % renewData)
   return _success(renewData)
