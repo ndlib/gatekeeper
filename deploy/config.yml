@@ -95,6 +95,9 @@ LambdaEnv:
         -
           Name: ALEPH_RENEW_PATH
           Value: ${ALEPH_RENEW_PATH}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-illiad
       Environment:
