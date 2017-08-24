@@ -1,15 +1,15 @@
 # Change Log
 
 ## [Dev](https://github.com/ndlib/gatekeeper/tree/master) (Development)
-[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v1.0.0...master)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.0...master)
 
 ### New features/enhancements:
 
 ### Bug fixes:
 
 
-## [1.0.0](https://github.com/ndlib/gatekeeper/tree/v1.0.0) (2017-08-24)
-[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v0.1.0...v1.0.0)
+## [2017.0](https://github.com/ndlib/gatekeeper/tree/v2017.0) (2017-08-24)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v0.1.0...v2017.0)
 
 ### New features/enhancements:
 - Added Aleph renew functionality [#19](https://github.com/ndlib/gatekeeper/pull/19)
