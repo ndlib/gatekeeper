@@ -81,6 +81,24 @@ LambdaEnv:
           Name: VERSION
           Value: ${GIT_VERSION}
 
+    - FunctionName: $SERVICE-$STAGE-alephRenew
+      Environment:
+        -
+          Name: ALEPH_PATH
+          Value: ${ALEPH_PATH}
+        -
+          Name: ALEPH_URL
+          Value: ${ALEPH_URL}
+        -
+          Name: ALEPH_ITEM_PATH
+          Value: ${ALEPH_ITEM_PATH}
+        -
+          Name: ALEPH_RENEW_PATH
+          Value: ${ALEPH_RENEW_PATH}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
+
     - FunctionName: $SERVICE-$STAGE-illiad
       Environment:
         -

@@ -6,20 +6,20 @@ def _error():
   return {
     "statusCode": 404,
     "headers": {
+      "Access-Control-Allow-Origin": "*",
       "x-nd-version": hesutil.getEnv("VERSION", 0),
     },
   }
-
 
 def _success(data):
   return {
     "statusCode": 200,
     "body": json.dumps(data),
     "headers": {
+      "Access-Control-Allow-Origin": "*",
       "x-nd-version": hesutil.getEnv("VERSION", 0),
     },
   }
-
 
 def findItem(event, context):
   itemId = event.get("pathParameters", {}).get("systemId")
@@ -33,6 +33,7 @@ def findItem(event, context):
   parsed = aleph.findItem(itemId)
   heslog.info("Got %s from aleph" % parsed)
   if not parsed:
+    heslog.error("Nothing in parsed information")
     return _error()
 
   record = parsed.get("record", {}).get("metadata", {}).get("oai_marc", {})
@@ -66,3 +67,24 @@ def findItem(event, context):
       "description": description,
       "purl": url,
     })
+
+
+def renewItem(event, context):
+  params = event.get("headers", {})
+  barcode = params.get("barcode")
+  heslog.addLambdaContext(event, context, barcode=barcode)
+
+  alephId = params.get("aleph-id")
+
+  if not barcode:
+    heslog.error("No barcode provided")
+    return _error()
+
+  if not alephId:
+    heslog.error("No aleph id provided")
+    return _error()
+
+  aleph = Aleph(alephId)
+  renewData = aleph.renew(barcode)
+  heslog.info("Returning success %s" % renewData)
+  return _success(renewData)

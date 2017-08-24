@@ -74,4 +74,5 @@ Resources:
         BorrowedArn: !GetAtt LambdasStack.Outputs.BorrowedArn
         PendingArn: !GetAtt LambdasStack.Outputs.PendingArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
+        AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
         AuthorizerName: !Ref AuthorizerName

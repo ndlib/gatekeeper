@@ -69,6 +69,17 @@ Parameters:
     Description: MB
     AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
     Default: 512
+  AlephRenewTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 30
+  AlephRenewMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 256
   IlliadTimeout:
     Type: Number
     Description: seconds
@@ -85,23 +96,26 @@ Outputs:
   BorrowedArn:
     Description: Borrowed lambda arn
     Value: !GetAtt Borrowed.Arn
-
   BorrowedLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${BorrowedLogs}
 
   PendingArn:
     Description: Pending lambda arn
     Value: !GetAtt Pending.Arn
-
   PendingLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${PendingLogs}
 
   AlephQueryArn:
     Description: AlephQuery lambda arn
     Value: !GetAtt AlephQuery.Arn
-
   AlephQueryLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephQueryLogs}
+
+  AlephRenewArn:
+    Description: AlephRenew lambda arn
+    Value: !GetAtt AlephRenew.Arn
+  AlephRenewLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephRenewLogs}
 
   AlephLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephLogs}
@@ -136,7 +150,13 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
-
+  BorrowedPermission:
+    DependsOn: Borrowed
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Borrowed.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
   BorrowedLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -169,7 +189,13 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
-
+  PendingPermission:
+    DependsOn: Pending
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Pending.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
   PendingLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -192,7 +218,6 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
-
   AlephLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -215,11 +240,46 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
-
+  AlephQueryPermission:
+    DependsOn: AlephQuery
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AlephQuery.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
   AlephQueryLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${AlephQuery}
+      RetentionInDays: !Ref LogRetention
+
+  AlephRenew:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-alephRenew
+      Description: Renew aleph item
+      Runtime: python2.7
+      Handler: alephQuery.renewItem
+      Timeout: !Ref AlephRenewTimeout
+      MemorySize: !Ref AlephRenewMemorySize
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+      VpcConfig:
+        SecurityGroupIds: !Ref AlephSecurityGroups
+        SubnetIds: !Ref AlephSubnets
+  AlephRenewPermission:
+    DependsOn: AlephRenew
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AlephRenew.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  AlephRenewLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AlephRenew}
       RetentionInDays: !Ref LogRetention
 
   Illiad:
@@ -228,40 +288,15 @@ Resources:
       FunctionName: !Sub ${ServiceName}-illiad
       Description: Get illiad resources for given netid
       Runtime: python2.7
+      Handler: serviceHandler.illiad
       Timeout: !Ref IlliadTimeout
       MemorySize: !Ref IlliadMemorySize
-      Handler: serviceHandler.illiad
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
-
   IlliadLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${Illiad}
       RetentionInDays: !Ref LogRetention
-
-  BorrowedPermission:
-    DependsOn: Borrowed
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt Borrowed.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-
-  PendingPermission:
-    DependsOn: Pending
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt Pending.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-
-  AlephQueryPermission:
-    DependsOn: AlephQuery
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt AlephQuery.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com

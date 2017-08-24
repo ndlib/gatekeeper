@@ -66,6 +66,13 @@ class Aleph(RequestType):
     return directory.get(zname, {}).get(zname + "-%s" % index, None)
 
 
+  def _formatDueDate(self, dueStr):
+    # '20170531' => 2017-05-31
+    if dueStr and len(dueStr) >= 8:
+      return "%s-%s-%s" % (dueStr[:4], dueStr[4:6], dueStr[6:8])
+    return dueStr
+
+
   def _makeAlephItem(self, alephDir, isHolds = False):
     # no due for holds
     status = self._getZPart(alephDir, 36, "status")
@@ -79,10 +86,7 @@ class Aleph(RequestType):
     if isHolds:
       status = self._getZPart(alephDir, 37, "status")
 
-    # '20170531' => 2017-05-31
-    dueDate = alephDir.get("due-date")
-    if dueDate and len(dueDate) >= 8:
-      dueDate = "%s-%s-%s" % (dueDate[:4], dueDate[4:6], dueDate[6:8])
+    dueDate = self._formatDueDate(alephDir.get("due-date"))
 
     item = {
       'title': self._getZPart(alephDir, 13, "title"),
@@ -90,6 +94,7 @@ class Aleph(RequestType):
       'dueDate': dueDate,
       'published': self._getZPart(alephDir, 13, "imprint"),
       'status': status,
+      'barcode': self._getZPart(alephDir, 30, "barcode"),
     }
 
     if isHolds:
@@ -110,6 +115,7 @@ class Aleph(RequestType):
       'telephone2': self._getZPart(parsed, 304, "telephone-2"),
       'homeLibrary': self._getZPart(parsed, 303, "home-library"),
       'status': self._getZPart(parsed, 305, "bor-status"),
+      'alephId': self._getZPart(parsed, 304, "id"),
     }
 
 
@@ -133,6 +139,43 @@ class Aleph(RequestType):
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
     return self._format(parsed)
+
+
+  def renew(self, barcode):
+    path = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True)
+
+    heslog.info("Renewing item")
+    url = self._formatUrl(self.url, path).replace("<<barcode>>", barcode)
+    stringResponse = self._makeReq(url, {})
+    parsed = self._parseXML(stringResponse)
+    heslog.debug(parsed)
+
+    def status(code, text = None):
+      ret = { "renewStatus": code}
+      if text:
+        ret["statusText"] = text
+      return ret
+
+    # handle aleph errors
+    error = parsed.get("error", "")
+    if "New due date must be bigger than current's loan due date" in error:
+      return status(304)
+    if "can not be found in library" in error or "is not Loaned in library" in error:
+      return status(404)
+    if "has no Local Information" in error or "Item provided is not loaned by given bor_id" in error:
+      return status(500, "Error in user information")
+
+    error = parsed.get("error-text-1")
+    if error:
+      return status(500, error)
+
+    error = parsed.get("error-text-2")
+    if error:
+      return status(500, error)
+
+    ret = status(200)
+    ret["dueDate"] = self._formatDueDate(parsed.get("due-date"))
+    return ret
 
 
   def checkedOut(self):
