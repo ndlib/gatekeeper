@@ -2,9 +2,9 @@ from hesburgh import heslog, hesutil
 from serviceRequests.aleph import Aleph
 import json
 
-def _error():
+def _error(code):
   return {
-    "statusCode": 404,
+    "statusCode": code,
     "headers": {
       "Access-Control-Allow-Origin": "*",
       "x-nd-version": hesutil.getEnv("VERSION", 0),
@@ -27,14 +27,14 @@ def findItem(event, context):
 
   if not itemId:
     heslog.error("No system id provided")
-    return _error()
+    return _error(400)
 
   aleph = Aleph(None)
   parsed = aleph.findItem(itemId)
   heslog.info("Got %s from aleph" % parsed)
   if not parsed:
     heslog.error("Nothing in parsed information")
-    return _error()
+    return _error(500)
 
   record = parsed.get("record", {}).get("metadata", {}).get("oai_marc", {})
   name = record.get("varfield_245_0", {})
@@ -78,13 +78,37 @@ def renewItem(event, context):
 
   if not barcode:
     heslog.error("No barcode provided")
-    return _error()
+    return _error(400)
 
   if not alephId:
     heslog.error("No aleph id provided")
-    return _error()
+    return _error(400)
 
   aleph = Aleph(alephId)
   renewData = aleph.renew(barcode)
   heslog.info("Returning success %s" % renewData)
   return _success(renewData)
+
+
+def updateUser(event, context):
+  params = event.get("headers", {})
+  library = params.get("library")
+  heslog.addLambdaContext(event, context, library=library)
+
+  alephId = params.get("aleph-id")
+
+  if not library:
+    heslog.error("No library provided")
+    return _error(400)
+
+  if not alephId:
+    heslog.error("No aleph id provided")
+    return _error(400)
+
+  aleph = Aleph(alephId)
+  updateResponse = aleph.updateHomeLibrary(library)
+  if updateResponse is None:
+    heslog.info("Returning success")
+    return _success(updateResponse)
+  heslog.error(updateResponse)
+  return _error(500)
