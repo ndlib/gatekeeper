@@ -8,12 +8,12 @@ Parameters:
   Stage:
     Type: String
     Description: The deployed stage
-  BorrowedArn:
+  AlephArn:
     Type: String
-    Description: Arn for the Borrowed Lambda
-  PendingArn:
+    Description: Arn for the Aleph Lambda
+  IlliadArn:
     Type: String
-    Description: Arn for the Pending Lambda
+    Description: Arn for the Illiad Lambda
   AlephQueryArn:
     Type: String
     Description: Arn for the AlephQuery Lambda
@@ -46,11 +46,17 @@ Resources:
         schemes:
         - "https"
         paths:
-          /items/borrowed:
+          /aleph:
             get:
+              parameters:
+              - name: "type"
+                in: "query"
+                required: true
+                type: "string"
+                description: "The type of information to get (borrowed, pending, user)"
               responses:
                 "200":
-                  description: The Checked out resource information
+                  description: Get personal Aleph info
                   headers:
                     Access-Control-Allow-Origin:
                       type: "string"
@@ -59,7 +65,7 @@ Resources:
                     Access-Control-Allow-Headers:
                       type: "string"
                   schema:
-                    $ref: '#/definitions/OutList'
+                    $ref: '#/definitions/PendList'
                 "401":
                   description: Unauthorized - most often because of invalid token
                 "404":
@@ -77,7 +83,7 @@ Resources:
                     - - "arn:aws:apigateway:"
                       - !Ref AWS::Region
                       - ":lambda:path/2015-03-31/functions/"
-                      - !Ref BorrowedArn
+                      - !Ref AlephArn
                       - "/invocations"
                 passthroughBehavior: "when_no_match"
                 httpMethod: "POST"
@@ -112,11 +118,17 @@ Resources:
                   application/json: "{statusCode:200}"
                 passthroughBehavior: "when_no_match"
                 type: "mock"
-          /items/pending:
+          /illiad:
             get:
+              parameters:
+              - name: "type"
+                in: "query"
+                required: true
+                type: "string"
+                description: "The type of information to get (borrowed, pending, user)"
               responses:
                 "200":
-                  description: The Pending resource information
+                  description: Get personal Illiad info
                   headers:
                     Access-Control-Allow-Origin:
                       type: "string"
@@ -143,7 +155,7 @@ Resources:
                     - - "arn:aws:apigateway:"
                       - !Ref AWS::Region
                       - ":lambda:path/2015-03-31/functions/"
-                      - !Ref PendingArn
+                      - !Ref IlliadArn
                       - "/invocations"
                 passthroughBehavior: "when_no_match"
                 httpMethod: "POST"

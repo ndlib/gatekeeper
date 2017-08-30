@@ -25,28 +25,6 @@ Parameters:
     Description: days
     Default: 7
     AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
-  BorrowedTimeout:
-    Type: Number
-    Description: seconds
-    MinValue: 1
-    MaxValue: 300
-    Default: 30
-  BorrowedMemorySize:
-    Type: Number
-    Description: MB
-    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
-    Default: 128
-  PendingTimeout:
-    Type: Number
-    Description: seconds
-    MinValue: 1
-    MaxValue: 300
-    Default: 30
-  PendingMemorySize:
-    Type: Number
-    Description: MB
-    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
-    Default: 128
   AlephQueryTimeout:
     Type: Number
     Description: seconds
@@ -93,18 +71,6 @@ Parameters:
     Default: 128
 
 Outputs:
-  BorrowedArn:
-    Description: Borrowed lambda arn
-    Value: !GetAtt Borrowed.Arn
-  BorrowedLogs:
-    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${BorrowedLogs}
-
-  PendingArn:
-    Description: Pending lambda arn
-    Value: !GetAtt Pending.Arn
-  PendingLogs:
-    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${PendingLogs}
-
   AlephQueryArn:
     Description: AlephQuery lambda arn
     Value: !GetAtt AlephQuery.Arn
@@ -117,91 +83,17 @@ Outputs:
   AlephRenewLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephRenewLogs}
 
+  AlephArn:
+    Value: !GetAtt Aleph.Arn
   AlephLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephLogs}
 
+  IlliadArn:
+    Value: !GetAtt Illiad.Arn
   IlliadLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${IlliadLogs}
 
 Resources:
-  Borrowed:
-    DependsOn:
-      - Aleph
-      - Illiad
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Sub ${ServiceName}-borrowed
-      Description: Get borrowed resources for given netid
-      Runtime: python2.7
-      Timeout: !Ref BorrowedTimeout
-      MemorySize: !Ref BorrowedMemorySize
-      Handler: joinHandler.borrowed
-      Environment:
-        Variables:
-          ALEPH_FUNC:
-            Fn::GetAtt:
-              - Aleph
-              - Arn
-          ILLIAD_FUNC:
-            Fn::GetAtt:
-              - Illiad
-              - Arn
-      Role: !Ref RoleArn
-      Code:
-        S3Bucket: !Ref SourceBucket
-        S3Key: !Ref SourceKey
-  BorrowedPermission:
-    DependsOn: Borrowed
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt Borrowed.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-  BorrowedLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${Borrowed}
-      RetentionInDays: !Ref LogRetention
-
-  Pending:
-    Type: AWS::Lambda::Function
-    DependsOn:
-      - Aleph
-      - Illiad
-    Properties:
-      FunctionName: !Sub ${ServiceName}-pending
-      Description: Get pending resources for given netid
-      Runtime: python2.7
-      Timeout: !Ref PendingTimeout
-      MemorySize: !Ref PendingMemorySize
-      Handler: joinHandler.pending
-      Environment:
-        Variables:
-          ALEPH_FUNC:
-            Fn::GetAtt:
-              - Aleph
-              - Arn
-          ILLIAD_FUNC:
-            Fn::GetAtt:
-              - Illiad
-              - Arn
-      Role: !Ref RoleArn
-      Code:
-        S3Bucket: !Ref SourceBucket
-        S3Key: !Ref SourceKey
-  PendingPermission:
-    DependsOn: Pending
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !GetAtt Pending.Arn
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-  PendingLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${Pending}
-      RetentionInDays: !Ref LogRetention
-
   Aleph:
     Type: AWS::Lambda::Function
     Properties:
@@ -218,6 +110,13 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
+  AlephPermission:
+    DependsOn: Aleph
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Aleph.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
   AlephLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -295,6 +194,13 @@ Resources:
       Code:
         S3Bucket: !Ref SourceBucket
         S3Key: !Ref SourceKey
+  IlliadPermission:
+    DependsOn: Illiad
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Illiad.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
   IlliadLogs:
     Type: AWS::Logs::LogGroup
     Properties:
