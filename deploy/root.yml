@@ -75,8 +75,8 @@ Resources:
       Parameters:
         ServiceName: !Ref ServiceName
         Stage: !Ref Stage
-        BorrowedArn: !GetAtt LambdasStack.Outputs.BorrowedArn
-        PendingArn: !GetAtt LambdasStack.Outputs.PendingArn
+        AlephArn: !GetAtt LambdasStack.Outputs.AlephArn
+        IlliadArn: !GetAtt LambdasStack.Outputs.IlliadArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
         AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
         AlephUpdateArn: !GetAtt LambdasStack.Outputs.AlephUpdateArn

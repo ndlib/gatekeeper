@@ -86,6 +86,15 @@ class Aleph(RequestType):
 
     if isHolds:
       status = self._getZPart(alephDir, 37, "status")
+      if not status: # blank = ready for pickup
+        status = "Ready for Pickup until %s" % (self._getZPart(alephDir, 37, "end-hold-date") or 'Unknown Date')
+      elif "In process" in status:
+        status = "In Process"
+      elif "Waiting" in status:
+        status = "Waiting in Queue"
+
+    if not status:
+      status = "No status available"
 
     dueDate = self._formatDueDate(alephDir.get("due-date"))
 
@@ -100,7 +109,8 @@ class Aleph(RequestType):
 
     if isHolds:
       item["holdDate"] = self._getZPart(alephDir, 37, "hold-date")
-      item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
+      if "Ready for Pickup" in status:
+        item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
 
     return item
 
