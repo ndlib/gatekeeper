@@ -2,6 +2,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "Portal Resources Lambdas"
 
 Parameters:
+  Version:
+    Type: String
+    Description: The git version of this deployment
   ServiceName:
     Type: String
     Description: The name of the service
@@ -80,6 +83,17 @@ Parameters:
     Description: MB
     AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
     Default: 256
+  AlephUpdateTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 30
+  AlephUpdateMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 256
   IlliadTimeout:
     Type: Number
     Description: seconds
@@ -117,6 +131,12 @@ Outputs:
   AlephRenewLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephRenewLogs}
 
+  AlephUpdateArn:
+    Description: AlephUpdate lambda arn
+    Value: !GetAtt AlephUpdate.Arn
+  AlephUpdateLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephUpdateLogs}
+
   AlephLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephLogs}
 
@@ -146,6 +166,7 @@ Resources:
             Fn::GetAtt:
               - Illiad
               - Arn
+          VERSION: !Ref Version
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
@@ -185,6 +206,7 @@ Resources:
             Fn::GetAtt:
               - Illiad
               - Arn
+          VERSION: !Ref Version
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
@@ -240,6 +262,9 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
+      Environment:
+        Variables:
+          VERSION: !Ref Version
   AlephQueryPermission:
     DependsOn: AlephQuery
     Type: AWS::Lambda::Permission
@@ -269,6 +294,9 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
+      Environment:
+        Variables:
+          VERSION: !Ref Version
   AlephRenewPermission:
     DependsOn: AlephRenew
     Type: AWS::Lambda::Permission
@@ -280,6 +308,38 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${AlephRenew}
+      RetentionInDays: !Ref LogRetention
+
+  AlephUpdate:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-alephUpdate
+      Description: Update aleph user
+      Runtime: python2.7
+      Handler: alephQuery.updateUser
+      Timeout: !Ref AlephUpdateTimeout
+      MemorySize: !Ref AlephUpdateMemorySize
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+      VpcConfig:
+        SecurityGroupIds: !Ref AlephSecurityGroups
+        SubnetIds: !Ref AlephSubnets
+      Environment:
+        Variables:
+          VERSION: !Ref Version
+  AlephUpdatePermission:
+    DependsOn: AlephUpdate
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AlephUpdate.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  AlephUpdateLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AlephUpdate}
       RetentionInDays: !Ref LogRetention
 
   Illiad:

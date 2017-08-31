@@ -20,6 +20,9 @@ Parameters:
   AlephRenewArn:
     Type: String
     Description: Arn for the AlephRenew Lambda
+  AlephUpdateArn:
+    Type: String
+    Description: Arn for the AlephUpdate Lambda
   AuthorizerName:
     Type: String
     Description: The name of the authorizer lambda
@@ -251,6 +254,8 @@ Resources:
                 httpMethod: 'POST'
                 type: 'aws_proxy'
                 uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AlephRenewArn}/invocations'
+              security:
+              - jwt: []
             options:
               consumes:
               - "application/json"
@@ -276,6 +281,66 @@ Resources:
                       method.response.header.Access-Control-Allow-Credentials: "'false'"
                       method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
                       method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,barcode,aleph-id'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{statusCode:200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /aleph/update:
+            post:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              parameters:
+              - name: "library"
+                in: "header"
+                required: true
+                type: "string"
+                description: "The library id to set as home library"
+              - name: "aleph-id"
+                in: "header"
+                required: true
+                type: "string"
+                description: "The alephId of the user to update"
+              responses:
+                '200':
+                  description: 'User successfully updated'
+                '500':
+                  description: 'Failure'
+              x-amazon-apigateway-request-validator: "params-only"
+              x-amazon-apigateway-integration:
+                passthroughBehavior: 'when_no_match'
+                httpMethod: 'POST'
+                type: 'aws_proxy'
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AlephUpdateArn}/invocations'
+              security:
+              - jwt: []
+            options:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Credentials:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Credentials: "'false'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,library,aleph-id'"
                       method.response.header.Access-Control-Allow-Origin: "'*'"
                 requestTemplates:
                   application/json: "{statusCode:200}"

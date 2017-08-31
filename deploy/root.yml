@@ -24,6 +24,9 @@ Parameters:
     Type: String
     Description: Name of the lambda authorizer
     Default: "jwt-auth-prod"
+  Version:
+    Type: String
+    Description: The git verison of this deployment
 
 Outputs:
   GatewayId:
@@ -61,6 +64,7 @@ Resources:
         RoleArn: !GetAtt RolesStack.Outputs.RoleArn
         AlephSecurityGroups: !Ref AlephSecurityGroups
         AlephSubnets: !Ref AlephSubnets
+        Version: !Ref Version
 
   GatewayStack:
     Type: AWS::CloudFormation::Stack
@@ -75,4 +79,5 @@ Resources:
         PendingArn: !GetAtt LambdasStack.Outputs.PendingArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
         AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
+        AlephUpdateArn: !GetAtt LambdasStack.Outputs.AlephUpdateArn
         AuthorizerName: !Ref AuthorizerName
