@@ -1,6 +1,7 @@
 from hesburgh import heslog, hesutil, hestest
 import xml.etree.ElementTree as ET
 from requestType import RequestType
+import urllib2
 
 
 class Aleph(RequestType):
@@ -85,6 +86,15 @@ class Aleph(RequestType):
 
     if isHolds:
       status = self._getZPart(alephDir, 37, "status")
+      if not status: # blank = ready for pickup
+        status = "Ready for Pickup until %s" % (self._getZPart(alephDir, 37, "end-hold-date") or 'Unknown Date')
+      elif "In process" in status:
+        status = "In Process"
+      elif "Waiting" in status:
+        status = "Waiting in Queue"
+
+    if not status:
+      status = "No status available"
 
     dueDate = self._formatDueDate(alephDir.get("due-date"))
 
@@ -99,7 +109,8 @@ class Aleph(RequestType):
 
     if isHolds:
       item["holdDate"] = self._getZPart(alephDir, 37, "hold-date")
-      item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
+      if "Ready for Pickup" in status:
+        item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
 
     return item
 
@@ -176,6 +187,34 @@ class Aleph(RequestType):
     ret = status(200)
     ret["dueDate"] = self._formatDueDate(parsed.get("due-date"))
     return ret
+
+
+  def updateHomeLibrary(self, newLib):
+    heslog.info("Updating home library to %s" % newLib)
+
+    updateXml = "<?xml version=\"1.0\"?><p-file-20><patron-record><z303><match-id-type>00</match-id-type><match-id>%s</match-id><record-action>A</record-action><z303-home-library>%s</z303-home-library></z303></patron-record></p-file-20>" % (self.netid, newLib)
+
+    url = self.url + '/X'
+    body = hesutil.getEnv("ALEPH_UPDATE_BODY", throw=True) \
+                  .replace("<<username>>", hesutil.getEnv("ALEPH_USER", throw=True)) \
+                  .replace("<<password>>", hesutil.getEnv("ALEPH_PASS", throw=True)) \
+                  .replace("<<reqxml>>", updateXml)
+
+    req = urllib2.Request(url, data=body)
+    req.get_method = lambda: "POST"
+    response = ""
+    try:
+      response = urllib2.urlopen(req)
+    except urllib2.HTTPError as e:
+      heslog.error("%s" % e.code)
+      heslog.error(e.read())
+      return None
+    except urllib2.URLError as e:
+      heslog.error(e.reason)
+      return None
+
+    parsed = self._parseXML(response.read())
+    return parsed.get("error")
 
 
   def checkedOut(self):
