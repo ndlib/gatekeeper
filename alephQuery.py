@@ -106,9 +106,8 @@ def updateUser(event, context):
     return _error(400)
 
   aleph = Aleph(alephId)
-  updateResponse = aleph.updateHomeLibrary(library)
-  if updateResponse is None:
+  updateSuccess = aleph.updateHomeLibrary(library)
+  if updateSuccess:
     heslog.info("Returning success")
-    return _success(updateResponse)
-  heslog.error(updateResponse)
+    return _success({})
   return _error(500)

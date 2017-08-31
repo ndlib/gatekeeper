@@ -214,7 +214,12 @@ class Aleph(RequestType):
       return None
 
     parsed = self._parseXML(response.read())
-    return parsed.get("error")
+    # <error/> is filled with both actual errors and the success message because that makes sense
+    if "Succeeded to REWRITE table" in parsed.get("error"):
+      return True
+    else:
+      heslog.error(parsed.get("error"))
+      return False
 
 
   def checkedOut(self):
