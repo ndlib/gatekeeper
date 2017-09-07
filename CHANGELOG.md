@@ -1,12 +1,11 @@
 # Change Log
 
-## [Dev](https://github.com/ndlib/gatekeeper/tree/master) (Development)
-[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.0...master)
+## [v2017.1](https://github.com/ndlib/gatekeeper/tree/v2017.1) (v2017.1)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.0...v2017.1)
 
 ### New features/enhancements:
-
-### Bug fixes:
-
+- Split aleph/ill queries [#22](https://github.com/ndlib/gatekeeper/pull/22)
+- Add ability to update home library [#21](https://github.com/ndlib/gatekeeper/pull/21)
 
 ## [2017.0](https://github.com/ndlib/gatekeeper/tree/v2017.0) (2017-08-24)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v0.1.0...v2017.0)
