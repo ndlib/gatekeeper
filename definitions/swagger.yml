@@ -1,5 +1,3 @@
-# this is an example of the Uber API
-# as a demonstration of an API spec in YAML
 swagger: '2.0'
 info:
   title: Portal Resources
@@ -10,56 +8,6 @@ info:
 schemes:
   - https
 paths:
-  /items/borrowed:
-    get:
-      summary: Get all borrowed resources for the user
-      security:
-        - jwt: []
-      responses:
-        200:
-          description: The Checked out resource information
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Headers:
-              type: "string"
-          schema:
-            $ref: '#/definitions/OutList'
-        401:
-          description: Unauthorized - most often because of invalid token
-        404:
-          description: The netid was not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /items/pending:
-    get:
-      summary: Get all pending resources for the user
-      security:
-        - jwt: []
-      responses:
-        200:
-          description: The Pending resource information
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Headers:
-              type: "string"
-          schema:
-            $ref: '#/definitions/PendList'
-        401:
-          description: Unauthorized - most often because of invalid token
-        404:
-          description: The netid was not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
   /aleph/{systemId}:
     get:
       summary: Get information about an aleph item by system number
@@ -104,29 +52,6 @@ definitions:
         type: string
       purl:
         type: string
-  Item:
-    type: object
-    properties:
-      title:
-        type: string
-  OutList:
-    type: object
-    properties:
-      user:
-        type: string
-      checkedOut:
-        type: array
-        items:
-          $ref: '#/definitions/Item'
-  PendList:
-    type: object
-    properties:
-      user:
-        type: string
-      pending:
-        type: array
-        items:
-          $ref: '#/definitions/Item'
   Error:
     type: object
     properties:
