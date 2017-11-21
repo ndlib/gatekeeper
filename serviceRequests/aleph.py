@@ -6,12 +6,13 @@ import urllib2
 
 class Aleph(RequestType):
   """docstring for Aleph"""
-  def __init__(self, netid):
+  def __init__(self, netid, library="ndu50"):
     super(Aleph, self).__init__(netid)
     self.name = "Aleph"
 
     # self.url = "http://aleph2.library.nd.edu:8991"
     self.url = hesutil.getEnv("ALEPH_URL", throw=True)
+    self.alephUrl = self._formatUrl(self.url, hesutil.getEnv("ALEPH_PATH", throw=True)).replace("<<lib>>", library)
 
     self._setCallback('checkedOut', self.checkedOut)
     self._setCallback('user', self.userData)
@@ -140,13 +141,11 @@ class Aleph(RequestType):
 
 
   def userData(self):
-    path = hesutil.getEnv("ALEPH_PATH", throw=True)
-
     headers = {
       'Content-Type': 'xml',
     }
 
-    url = self._formatUrl(self.url, path)
+    url = self.alephUrl
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
     return self._format(parsed)
@@ -223,10 +222,6 @@ class Aleph(RequestType):
 
 
   def checkedOut(self):
-    path = hesutil.getEnv("ALEPH_PATH", throw=True)
-    if path is None:
-      return None;
-
     headers = {
       'Content-Type': 'xml',
     }
@@ -237,8 +232,7 @@ class Aleph(RequestType):
       heslog.info("Got a test netid")
       stringResponse = test.get("aleph", "")
     else:
-      url = self._formatUrl(self.url, path)
-      stringResponse = self._makeReq(url, headers)
+      stringResponse = self._makeReq(self.alephUrl, headers)
 
     parsed = self._parseXML(stringResponse)
 
@@ -249,10 +243,6 @@ class Aleph(RequestType):
 
 
   def pending(self):
-    path = hesutil.getEnv("ALEPH_PATH", throw=True)
-    if path is None:
-      return None;
-
     headers = {
       'Content-Type': 'xml',
     }
@@ -263,8 +253,7 @@ class Aleph(RequestType):
       heslog.info("Got a test netid")
       stringResponse = test.get("aleph", "")
     else:
-      url = self._formatUrl(self.url, path)
-      stringResponse = self._makeReq(url, headers)
+      stringResponse = self._makeReq(self.alephUrl, headers)
 
     parsed = self._parseXML(stringResponse)
 

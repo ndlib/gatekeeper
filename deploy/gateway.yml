@@ -57,6 +57,11 @@ Resources:
                 required: true
                 type: "string"
                 description: "The type of information to get (borrowed, pending, user)"
+              - name: "library"
+                in: "query"
+                required: false
+                type: "string"
+                description: "The library to query for items (ndu50, hcc50, bci50, smc50)"
               responses:
                 "200":
                   description: Get personal Aleph info

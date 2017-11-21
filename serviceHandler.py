@@ -43,7 +43,9 @@ def _error(code):
 
 
 def aleph(event, context):
-  requestType = event.get("queryStringParameters", {}).get("type", None)
+  queryParams = event.get("queryStringParameters", {})
+  requestType = queryParams.get("type", None)
+  library = queryParams.get("library")
   netid = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
 
   heslog.addLambdaContext(event, context, fn="aleph", requestType=requestType)
@@ -56,8 +58,12 @@ def aleph(event, context):
     heslog.error("no query type specified")
     return _error(400)
 
+  if library is None:
+    heslog.info("No library specified, using ndu50")
+    library = "ndu50"
+
   heslog.info("Starting request")
-  data = _handle(Aleph(netid), requestType)
+  data = _handle(Aleph(netid, library), requestType)
   heslog.info("Success")
   return _success(data)
 
