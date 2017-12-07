@@ -2,23 +2,9 @@ import json
 from hesburgh import heslog, hesutil, hestest
 from serviceRequests.aleph import Aleph
 from serviceRequests.illiad import Illiad
+from serviceRequests.primo import Primo
 
 hestest.init(__file__, "testdata")
-
-requestTypes = {
-  "borrowed": ["checkedOut", "web"],
-  "pending": ["pending"],
-  "user": ["user"],
-}
-
-def _handle(service, requestType):
-  data = {}
-  toGet = requestTypes[requestType]
-  for key in toGet:
-    data[key] = service.request(key)
-
-  return data
-
 
 def _success(data):
   heslog.info("Success")
@@ -57,8 +43,10 @@ def aleph(event, context):
     return _error(400)
 
   heslog.info("Starting request")
-  data = _handle(Aleph(netid), requestType)
-  heslog.info("Success")
+  data = Aleph(netid, library).request(requestType)
+
+  if data is None:
+    heslog.info("No information returned from request")
   return _success(data)
 
 
@@ -77,7 +65,32 @@ def illiad(event, context):
     return _error(400)
 
   heslog.info("Starting request")
-  data = _handle(Illiad(netid), requestType)
-  heslog.info("Success")
+  data = Illiad(netid).request(requestType)
+
+  if data is None:
+    heslog.info("No information returned from request")
+  return _success(data)
+
+
+def primo(event, context):
+  queryParams = event.get("queryStringParameters", {})
+  requestType = queryParams.get("type", None)
+  userId = queryParams.get("userId", None)
+
+  heslog.addLambdaContext(event, context, fn="primo", requestType=requestType)
+
+  if userId is None:
+    heslog.error("no userId")
+    return _error(400)
+
+  if requestType is None:
+    heslog.error("no query type specified")
+    return _error(400)
+
+  heslog.info("Starting request")
+  data = Primo(userId).request(requestType)
+
+  if data is None:
+    heslog.info("No information returned from request")
   return _success(data)
 
