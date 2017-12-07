@@ -9,8 +9,7 @@ class Illiad(RequestType):
     self.name = "Illiad"
     self.url = hesutil.getEnv("ILLIAD_URL", throw=True)
 
-    self._setCallback('checkedOut', self.checkedOut)
-    self._setCallback('web', self.web)
+    self._setCallback('borrowed', self.borrowed)
     self._setCallback('pending', self.pending)
 
 
@@ -66,6 +65,13 @@ class Illiad(RequestType):
       return []
 
     return self._format(loaded)
+
+
+  def borrowed(self):
+    return {
+      "checkedOut": self.checkedOut(),
+      "web": self.web(),
+    }
 
 
   def checkedOut(self):
