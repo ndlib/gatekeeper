@@ -43,7 +43,7 @@ def aleph(event, context):
     return _error(400)
 
   heslog.info("Starting request")
-  data = Aleph(netid, library).request(requestType)
+  data = Aleph(netid).request(requestType)
 
   if data is None:
     heslog.info("No information returned from request")
