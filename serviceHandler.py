@@ -29,7 +29,9 @@ def _error(code):
 
 
 def aleph(event, context):
-  requestType = event.get("queryStringParameters", {}).get("type", None)
+  queryParams = event.get("queryStringParameters", {})
+  requestType = queryParams.get("type", None)
+  library = queryParams.get("library")
   netid = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
 
   heslog.addLambdaContext(event, context, fn="aleph", requestType=requestType)
@@ -42,8 +44,12 @@ def aleph(event, context):
     heslog.error("no query type specified")
     return _error(400)
 
+  if library is None:
+    heslog.info("No library specified, using ndu50")
+    library = "ndu50"
+
   heslog.info("Starting request")
-  data = Aleph(netid).request(requestType)
+  data = Aleph(netid, library).request(requestType)
 
   if data is None:
     heslog.info("No information returned from request")
@@ -75,7 +81,7 @@ def illiad(event, context):
 def primo(event, context):
   queryParams = event.get("queryStringParameters", {})
   requestType = queryParams.get("type", None)
-  userId = queryParams.get("userId", None)
+  userId = queryParams.get("aleph-id", None)
 
   heslog.addLambdaContext(event, context, fn="primo", requestType=requestType)
 
