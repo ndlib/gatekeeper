@@ -1,5 +1,3 @@
-# this is an example of the Uber API
-# as a demonstration of an API spec in YAML
 swagger: '2.0'
 info:
   title: Portal Resources
@@ -10,56 +8,6 @@ info:
 schemes:
   - https
 paths:
-  /items/borrowed:
-    get:
-      summary: Get all borrowed resources for the user
-      security:
-        - jwt: []
-      responses:
-        200:
-          description: The Checked out resource information
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Headers:
-              type: "string"
-          schema:
-            $ref: '#/definitions/OutList'
-        401:
-          description: Unauthorized - most often because of invalid token
-        404:
-          description: The netid was not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /items/pending:
-    get:
-      summary: Get all pending resources for the user
-      security:
-        - jwt: []
-      responses:
-        200:
-          description: The Pending resource information
-          headers:
-            Access-Control-Allow-Origin:
-              type: "string"
-            Access-Control-Allow-Methods:
-              type: "string"
-            Access-Control-Allow-Headers:
-              type: "string"
-          schema:
-            $ref: '#/definitions/PendList'
-        401:
-          description: Unauthorized - most often because of invalid token
-        404:
-          description: The netid was not found
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
   /aleph/{systemId}:
     get:
       summary: Get information about an aleph item by system number
@@ -87,7 +35,154 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /aleph:
+    get:
+      parameters:
+      - name: "type"
+        in: "query"
+        required: true
+        type: "string"
+        description: "The type of information to get (borrowed, pending, user)"
+        enum: ['pending', 'borrowed', 'user']
+      responses:
+        "200":
+          description: Get personal Aleph info
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+          schema:
+            $ref: '#/definitions/PendList'
+        "401":
+          description: Unauthorized - most often because of invalid token
+        "404":
+          description: The netid was not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+      - jwt: []
+  /illiad:
+    get:
+      parameters:
+      - name: "type"
+        in: "query"
+        required: true
+        type: "string"
+        description: "The type of information to get (borrowed, pending)"
+        enum: ['pending', 'borrowed']
+      responses:
+        "200":
+          description: Get personal Illiad info
+          headers:
+            Access-Control-Allow-Origin:
+              type: "string"
+            Access-Control-Allow-Methods:
+              type: "string"
+            Access-Control-Allow-Headers:
+              type: "string"
+          schema:
+            $ref: '#/definitions/PendList'
+        "401":
+          description: Unauthorized - most often because of invalid token
+        "404":
+          description: The netid was not found
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+      - jwt: []
+  /primo:
+     get:
+       parameters:
+        - name: "type"
+          in: "query"
+          required: true
+          type: "string"
+          description: "The type of information to get (favorites)"
+          enum: ['favorites']
+        - name: "userId"
+          in: "query"
+          required: true
+          type: "string"
+          description: "User's alephId"
+       responses:
+         "200":
+           description: Get personal Primo info
+           headers:
+             Access-Control-Allow-Origin:
+               type: "string"
+             Access-Control-Allow-Methods:
+               type: "string"
+             Access-Control-Allow-Headers:
+               type: "string"
+           schema:
+             $ref: '#/definitions/PendList'
+         "401":
+           description: Unauthorized - most often because of invalid token
+         "404":
+           description: The netid was not found
+         default:
+           description: Unexpected error
+           schema:
+             $ref: '#/definitions/Error'
+       security:
+       - jwt: []
+### NOTE: We are not testing /aleph/renew endpoint because its a POST request that needs items checked Out
+### TODO: Ensure there is unit testing coverage
+# /aleph/renew:
+#   post:
+#     consumes:
+#     - "application/json"
+#     produces:
+#     - "application/json"
+#     parameters:
+#     - name: "barcode"
+#       in: "header"
+#       required: true
+#       type: "string"
+#       description: "The barcode of the item to renew"
+#     - name: "aleph-id"
+#       in: "header"
+#       required: true
+#       type: "string"
+#       description: "The alephId of the user doing the renewal"
+#     responses:
+#       '200':
+#         description: 'Item successfully renewed'
+#       '500':
+#         description: 'Item was not renewed'
 
+### NOTE: We are not testing /aleph/update endpoint because our testing netIds
+### t_heslib[01..05] do not have valid alpeh IDs
+### ToDo: Ensure there is unit testing coverage
+# /aleph/update:
+#   post:
+#     consumes:
+#     - "application/json"
+#     produces:
+#     - "application/json"
+#     parameters:
+#     - name: "library"
+#       in: "header"
+#       required: true
+#       type: "string"
+#       description: "The library id to set as home library"
+#     - name: "aleph-id"
+#       in: "header"
+#       required: true
+#       type: "string"
+#       description: "The alephId of the user to update"
+#     responses:
+#       '200':
+#         description: 'User successfully updated'
+#       '500':
+#         description: 'Failure'
 securityDefinitions:
   jwt:
     type: "apiKey"
@@ -109,15 +204,6 @@ definitions:
     properties:
       title:
         type: string
-  OutList:
-    type: object
-    properties:
-      user:
-        type: string
-      checkedOut:
-        type: array
-        items:
-          $ref: '#/definitions/Item'
   PendList:
     type: object
     properties:
