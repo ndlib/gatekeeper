@@ -9,8 +9,7 @@ class Illiad(RequestType):
     self.name = "Illiad"
     self.url = hesutil.getEnv("ILLIAD_URL", throw=True)
 
-    self._setCallback('checkedOut', self.checkedOut)
-    self._setCallback('web', self.web)
+    self._setCallback('borrowed', self.borrowed)
     self._setCallback('pending', self.pending)
 
 
@@ -68,6 +67,13 @@ class Illiad(RequestType):
     return self._format(loaded)
 
 
+  def borrowed(self):
+    return {
+      "checkedOut": self.checkedOut(),
+      "web": self.web(),
+    }
+
+
   def checkedOut(self):
     path = "<<netid>>?$filter=(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"
     return self._illiad(path, "checkedOut")
@@ -80,4 +86,4 @@ class Illiad(RequestType):
 
   def pending(self):
     path = "<<netid>>?$filter=(TransactionStatus%20ne%20%27Request%20Finished%27)%20and%20not%20startswith(TransactionStatus,%20%27Cancel%27)%20and%20not%20(TransactionStatus%20eq%20%27Delivered%20to%20Web%27)%20and%20not%20(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"
-    return self._illiad(path, "pending")
+    return { "pending": self._illiad(path, "pending") }

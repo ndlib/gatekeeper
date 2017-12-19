@@ -14,7 +14,7 @@ class Aleph(RequestType):
     self.url = hesutil.getEnv("ALEPH_URL", throw=True)
     self.alephUrl = self._formatUrl(self.url, hesutil.getEnv("ALEPH_PATH", throw=True)).replace("<<lib>>", library)
 
-    self._setCallback('checkedOut', self.checkedOut)
+    self._setCallback('borrowed', self.borrowed)
     self._setCallback('user', self.userData)
     self._setCallback('pending', self.pending)
 
@@ -221,7 +221,11 @@ class Aleph(RequestType):
       return False
 
 
-  def checkedOut(self):
+  def borrowed(self):
+    path = hesutil.getEnv("ALEPH_PATH", throw=True)
+    if path is None:
+      return None;
+
     headers = {
       'Content-Type': 'xml',
     }
@@ -239,7 +243,7 @@ class Aleph(RequestType):
     items = parsed.get('item-l', [])
     if type(items) is dict:
       items = [items]
-    return [ self._makeAlephItem(i) for i in items ]
+    return { "web": [], "checkedOut": [ self._makeAlephItem(i) for i in items ] }
 
 
   def pending(self):
@@ -260,5 +264,5 @@ class Aleph(RequestType):
     items = parsed.get('item-h', [])
     if type(items) is dict:
       items = [items]
-    return [ self._makeAlephItem(i, True) for i in items ]
+    return { "pending": [ self._makeAlephItem(i, True) for i in items ] }
 

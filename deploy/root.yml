@@ -77,6 +77,7 @@ Resources:
         Stage: !Ref Stage
         AlephArn: !GetAtt LambdasStack.Outputs.AlephArn
         IlliadArn: !GetAtt LambdasStack.Outputs.IlliadArn
+        PrimoArn: !GetAtt LambdasStack.Outputs.PrimoArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
         AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
         AlephUpdateArn: !GetAtt LambdasStack.Outputs.AlephUpdateArn

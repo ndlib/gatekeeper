@@ -109,3 +109,12 @@ LambdaEnv:
         -
           Name: ILLIAD_URL
           Value: ${ILLIAD_URL}
+
+    - FunctionName: $SERVICE-$STAGE-primo
+      Environment:
+        -
+          Name: PRIMO_URL
+          Value: ${PRIMO_URL}
+        -
+          Name: PRIMO_DISPLAY_URL
+          Value: ${PRIMO_DISPLAY_URL}
