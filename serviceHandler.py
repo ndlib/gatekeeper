@@ -81,7 +81,7 @@ def illiad(event, context):
 def primo(event, context):
   queryParams = event.get("queryStringParameters", {})
   requestType = queryParams.get("type", None)
-  userId = queryParams.get("userId", None)
+  userId = queryParams.get("aleph-id", None)
 
   heslog.addLambdaContext(event, context, fn="primo", requestType=requestType)
 

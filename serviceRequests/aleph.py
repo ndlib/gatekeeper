@@ -222,10 +222,6 @@ class Aleph(RequestType):
 
 
   def borrowed(self):
-    path = hesutil.getEnv("ALEPH_PATH", throw=True)
-    if path is None:
-      return None;
-
     headers = {
       'Content-Type': 'xml',
     }

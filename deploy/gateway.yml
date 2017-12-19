@@ -64,7 +64,8 @@ Resources:
                 in: "query"
                 required: false
                 type: "string"
-                description: "The library to query for items (ndu50, hcc50, bci50, smc50)"
+                description: "The library id to query (defaults to ndu)"
+                enum: [ndu50, hcc50, bci50, smc50]
               responses:
                 "200":
                   description: Get personal Aleph info
@@ -209,6 +210,11 @@ Resources:
                 required: true
                 type: "string"
                 description: "The type of information to get (favorites)"
+                enum: ['favorites']
+              - name: "aleph-id"
+                in: query
+                required: true
+                description: "the aleph id of the user"
               responses:
                 "200":
                   description: Get personal Primo info
