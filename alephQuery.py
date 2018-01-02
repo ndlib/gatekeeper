@@ -69,7 +69,6 @@ def fromRecord(data, idToGet=None, i1=None, i2=None, subfield=None):
 def appendDataStr(data, key, toAppend):
   return toAppend.strip() if key not in data else ("%s\n%s" % (data.get(key, ""), toAppend.strip()))
 
-
 def findItem(event, context):
   itemId = event.get("pathParameters", {}).get("systemId")
   heslog.addLambdaContext(event, context, sysId=itemId)
@@ -89,6 +88,16 @@ def findItem(event, context):
 
   # yay super nested xml documents!
   record = parsed.find_doc.record.metadata.oai_marc.varfield
+
+  # As an example of what we're matching
+  # This is the marc xml
+  # <varfield id="730" i1="0" i2=" ">
+  #   <subfield label="a">Literature online.</subfield>
+  # </varfield>
+  # often we don't care about i1 or i2, only id and the subfield with label "a"
+  # but sometimes we must match i1 and/or i2 to make sure we're getting useful information to display
+  # Some fields can have multiple entries, eg: 856
+  # for this we must iterate over all the entires, hence "iterateOnRecord"
 
   # name
   outData["name"] = fromRecord(record, 245, subfield="a")
