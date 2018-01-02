@@ -23,17 +23,51 @@ def _success(data):
   }
 
 # helper so we don't have to have if logic on every field below
-def iterate(field):
-  if isinstance(field, list):
-    for i in field:
-      yield i
-  else:
-    yield field
+def iterateOnRecord(data, idToGet, i1=None, i2=None):
+  # make sure our identifiers are strings
+  idToGet = str(idToGet)
+  if i1 is not None:
+    i1 = str(i1)
+  if i2 is not None:
+    i2 = str(i2)
+
+  # iterate over all fields, yielding only those that match our identifiers
+  for field in data:
+    if ((field["id"] == idToGet or field["label"] == idToGet) and
+        (not i1 or (i1 and field["i1"] == i1)) and
+        (not i2 or (i2 and field["i2"] == i2))
+      ):
+      yield field
 
 # helper to get first (or only) element of a field
-def first(field):
-  for x in iterate(field):
-    return x
+def fromRecord(data, idToGet=None, i1=None, i2=None, subfield=None):
+  # ensure we're using strings
+  if subfield is not None:
+    subfield = str(subfield)
+
+  # get the record, use given data if we don't have ids (gettings subfield)
+  found = None
+  if not idToGet:
+    found = data
+  else:
+    # this allows us to reuse code, we have to start a loop to deref the iterator
+    for x in iterateOnRecord(data, idToGet, i1, i2):
+      found = x
+      break
+
+  # If we want to find a subfield of the above field
+  if found and subfield:
+    for sub in found.subfield:
+      if sub["label"] == subfield:
+        # Found the desired subfield, return it's data
+        return sub.cdata.strip()
+    # Didn't find the subfield, return failure
+    return None
+  return found
+
+# helper to append to a string with a newline
+def appendDataStr(data, key, toAppend):
+  return toAppend.strip() if key not in data else ("%s\n%s" % (data.get(key, ""), toAppend.strip()))
 
 
 def findItem(event, context):
@@ -46,59 +80,67 @@ def findItem(event, context):
     heslog.error("No system id provided")
     return _error(400)
 
-  aleph = Aleph(None)
+  aleph = Aleph()
   parsed = aleph.findItem(itemId)
   heslog.info("Got response from aleph")
   if not parsed:
     heslog.error("Nothing in parsed information")
     return _error(500)
 
-  record = parsed.get("record", {}).get("metadata", {}).get("oai_marc", {})
+  # yay super nested xml documents!
+  record = parsed.find_doc.record.metadata.oai_marc.varfield
 
   # name
-  outData["name"] = record.get("varfield_245_0", {}).get("subfield_a", "").strip()
+  outData["name"] = fromRecord(record, 245, subfield="a")
 
   # description
-  recordDescription = record.get("varfield_520", {})
-  description = first(recordDescription)
-  for instance in iterate(recordDescription):
+  description = fromRecord(record, 520)
+  for instance in iterateOnRecord(record, 520):
     # If there's a 520 with subfield 9 of value g, that's the one we want
-    if instance.get("subfield_9", "") == "g":
+    if fromRecord(instance, subfield="9") == "g":
       description = instance
       break
-  outData["description"] = description.get("subfield_a", "").strip()
+  outData["description"] = fromRecord(description, subfield="a")
 
-  # url
-  outData["url"] = first(record.get("varfield_856_0", {})).get("subfield_u", "").strip()
+  # url (legacy)
+  outData["url"] = fromRecord(record, 856, 4, 0, subfield="u")
+
+  # all urls with titles and notes
+  urls = []
+  for url in iterateOnRecord(record, 856, 4, 0):
+    urls.append({
+      "url": fromRecord(url, subfield="u"),
+      "title": fromRecord(url, subfield=3),
+      "notes": fromRecord(url, subfield="z"),
+    })
+  outData["urls"] = urls
 
   # access data
-  access = record.get("varfield_506", {})
   for letter in ['f', 'a', 'c']:
-    for a in iterate(access):
-      accessValue = a.get("subfield_" + letter)
+    for a in iterateOnRecord(record, 506):
+      accessValue = fromRecord(a, subfield=letter)
       if accessValue:
-        outData["access"] = "%s%s\n" % (outData.get("access", ""), accessValue.strip())
-  outData["access"] = outData.get("access", "").strip()
-
-  # restrictions
-  outData["restrictions"] = record.get("varfield_540", {}).get("subfield_a", "").strip()
+        accessValue = accessValue.strip().strip(punctuation) \
+                      .replace("Online access with authorization", "Notre Dame faculty, staff, and students") \
+                      .replace("Access restricted to subscribers", "Notre Dame faculty, staff, and students") \
+                      .replace("Unrestricted online access", "Public")
+        outData["access"] = appendDataStr(outData, "access", accessValue)
 
   # includes
-  for inc in iterate(record.get("varfield_740_2", {})):
-    outData["includes"] = "%s%s\n" % (outData.get("includes", ""), inc.get("subfield_a", "").strip().strip(punctuation))
-  outData["includes"] = outData.get("includes", "").strip().title().strip(punctuation)
+  for inc in iterateOnRecord(record, 740, i2=2):
+    outData["includes"] = appendDataStr(outData, "includes", fromRecord(inc, subfield="a").strip(punctuation).title())
 
   # meta (platform, publisher, provider)
-  for meta in iterate(record.get("varfield_710")):
-    sub4 = meta.get("subfield_4", "")
-    metaValue = meta.get("subfield_a", "").strip()
+  for meta in iterateOnRecord(record, 710, i2=" "):
+    sub4 = fromRecord(meta, subfield=4)
+    metaValue = fromRecord(meta, subfield="a")
 
     if sub4 == "pltfrm":
-      outData["platform"] = metaValue
+      outData["platform"] = appendDataStr(outData, "platform", metaValue)
     elif sub4 == "pbl":
-      outData["publisher"] = metaValue
+      outData["publisher"] = appendDataStr(outData, "publisher", metaValue)
     elif sub4 == "prv":
-      outData["provider"] = metaValue
+      outData["provider"] = appendDataStr(outData, "provider", metaValue)
 
   heslog.info("Returning success")
   return _success(outData)
