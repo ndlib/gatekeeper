@@ -103,7 +103,7 @@ def findItem(event, context):
   outData["description"] = fromRecord(description, subfield="a")
 
   # url (legacy)
-  outData["url"] = fromRecord(record, 856, 4, 0, subfield="u")
+  outData["purl"] = fromRecord(record, 856, 4, 0, subfield="u")
 
   # all urls with titles and notes
   urls = []
