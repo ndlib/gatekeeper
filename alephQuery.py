@@ -137,7 +137,7 @@ def findItem(event, context):
 
   # includes
   for inc in iterateOnRecord(record, 740, i2=2):
-    outData["includes"] = appendDataStr(outData, "includes", fromRecord(inc, subfield="a").strip(punctuation).title())
+    outData["includes"] = appendDataStr(outData, "includes", fromRecord(inc, subfield="a").strip(punctuation))
 
   # meta (platform, publisher, provider)
   for meta in iterateOnRecord(record, 710, i2=" "):
