@@ -18,26 +18,17 @@ class IlliadTestCase(unittest.TestCase):
 
   def bookTest(self, item):
     self.assertIn("title", item)
-    self.assertIn("journalTitle", item)
-    self.assertIn("journalVolume", item)
-    self.assertIn("journalIssue", item)
-    self.assertIn("journalMonth", item)
-    self.assertIn("journalYear", item)
-    self.assertIn("articleAuthor", item)
-    self.assertIn("articleTitle", item)
     self.assertIn("author", item)
-    self.assertIn("publishedDate", item)
-    self.assertIn("requestType", item)
+    self.assertIn("published", item)
     self.assertIn("dueDate", item)
     self.assertIn("transactionNumber", item)
-    self.assertIn("transactionStatus", item)
-    self.assertIn("pages", item)
+    self.assertIn("status", item)
 
 
   def test_book_format(self):
     self.handler._makeReq = Mock(return_value=hestest.get("t_heslib01", {}).get("illiad_checkedOut"))
 
-    data = self.handler.request("checkedOut")
+    data = self.handler.checkedOut()
     headers = { 'Content-Type': 'application/json', 'ApiKey': 'test_key' }
     url = self.handler.url
 
@@ -53,7 +44,7 @@ class IlliadTestCase(unittest.TestCase):
   def test_web(self):
     self.handler._makeReq = Mock(return_value=hestest.get("t_heslib01", {}).get("illiad_web"))
 
-    data = self.handler.request("web")
+    data = self.handler.web()
     headers = { 'Content-Type': 'application/json', 'ApiKey': 'test_key' }
     url = self.handler.url
 
@@ -69,7 +60,7 @@ class IlliadTestCase(unittest.TestCase):
   def test_pending(self):
     self.handler._makeReq = Mock(return_value=hestest.get("t_heslib01", {}).get("illiad_pending"))
 
-    data = self.handler.request("pending")
+    data = self.handler.pending().get("pending")
     headers = { 'Content-Type': 'application/json', 'ApiKey': 'test_key' }
     url = self.handler.url
 
