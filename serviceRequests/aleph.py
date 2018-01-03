@@ -2,11 +2,12 @@ from hesburgh import heslog, hesutil, hestest
 import xml.etree.ElementTree as ET
 from requestType import RequestType
 import urllib2
+import untangle
 
 
 class Aleph(RequestType):
   """docstring for Aleph"""
-  def __init__(self, netid, library="ndu50"):
+  def __init__(self, netid="", library="ndu50"):
     super(Aleph, self).__init__(netid)
     self.name = "Aleph"
 
@@ -137,7 +138,7 @@ class Aleph(RequestType):
     url = self.url + path.replace("<<doc>>", doc)
     heslog.info("Requesting document %s" % doc)
     stringResponse = self._makeReq(url, {})
-    return self._parseXML(stringResponse)
+    return untangle.parse(stringResponse)
 
 
   def userData(self):
