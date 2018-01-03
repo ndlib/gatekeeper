@@ -100,7 +100,7 @@ def findItem(event, context):
   # for this we must iterate over all the entires, hence "iterateOnRecord"
 
   # name
-  outData["name"] = fromRecord(record, 245, subfield="a")
+  outData["name"] = fromRecord(record, 245, subfield="a").strip().strip(punctuation)
 
   # description
   description = fromRecord(record, 520)
