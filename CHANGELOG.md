@@ -1,7 +1,7 @@
 # Change Log
 
-## [v2017.3](https://github.com/ndlib/gatekeeper/tree/v2017.3) (v2017.3)
-[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.2...v2017.3)
+## [v2018.1](https://github.com/ndlib/gatekeeper/tree/v2018.1) (v2018.1)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.2...v2018.1)
 
 ### New features/enhancements:
 - Allow Aleph requests to specify library to query [#25](https://github.com/ndlib/usurper/pull/25)
