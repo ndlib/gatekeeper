@@ -20,7 +20,7 @@ class AlephTestCase(unittest.TestCase):
 
 
   def test_user_data_format(self):
-    data = self.handler.request("user")
+    data = self.handler.request("user").get("user")
     self.handler._makeReq.assert_called_with(self.handler.url + "/test_path", { 'Content-Type': 'xml' })
 
     self.assertIn("name", data)
