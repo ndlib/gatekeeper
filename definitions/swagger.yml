@@ -44,6 +44,12 @@ paths:
         type: "string"
         description: "The type of information to get (borrowed, pending, user)"
         enum: ['pending', 'borrowed', 'user']
+      - name: "library"
+        in: "query"
+        required: false
+        type: "string"
+        description: "The library id to query (defaults to ndu)"
+        enum: [ndu50, hcc50, bci50, smc50]
       responses:
         "200":
           description: Get personal Aleph info
@@ -97,42 +103,43 @@ paths:
             $ref: '#/definitions/Error'
       security:
       - jwt: []
-  /primo:
-     get:
-       parameters:
-        - name: "type"
-          in: "query"
-          required: true
-          type: "string"
-          description: "The type of information to get (favorites)"
-          enum: ['favorites']
-        - name: "userId"
-          in: "query"
-          required: true
-          type: "string"
-          description: "User's alephId"
-       responses:
-         "200":
-           description: Get personal Primo info
-           headers:
-             Access-Control-Allow-Origin:
-               type: "string"
-             Access-Control-Allow-Methods:
-               type: "string"
-             Access-Control-Allow-Headers:
-               type: "string"
-           schema:
-             $ref: '#/definitions/PendList'
-         "401":
-           description: Unauthorized - most often because of invalid token
-         "404":
-           description: The netid was not found
-         default:
-           description: Unexpected error
-           schema:
-             $ref: '#/definitions/Error'
-       security:
-       - jwt: []
+  # NOTE: /primo is not being consumed as part of r20180105 release
+  # /primo:
+  #    get:
+  #      parameters:
+  #       - name: "type"
+  #         in: "query"
+  #         required: true
+  #         type: "string"
+  #         description: "The type of information to get (favorites)"
+  #         enum: ['favorites']
+  #       - name: "aleph-id"
+  #         in: "query"
+  #         required: true
+  #         type: "string"
+  #         description: "User's alephId"
+  #      responses:
+  #        "200":
+  #          description: Get personal Primo info
+  #          headers:
+  #            Access-Control-Allow-Origin:
+  #              type: "string"
+  #            Access-Control-Allow-Methods:
+  #              type: "string"
+  #            Access-Control-Allow-Headers:
+  #              type: "string"
+  #          schema:
+  #            $ref: '#/definitions/PendList'
+  #        "401":
+  #          description: Unauthorized - most often because of invalid token
+  #        "404":
+  #          description: The netid was not found
+  #        default:
+  #          description: Unexpected error
+  #          schema:
+  #            $ref: '#/definitions/Error'
+  #      security:
+  #      - jwt: []
 ### NOTE: We are not testing /aleph/renew endpoint because its a POST request that needs items checked Out
 ### TODO: Ensure there is unit testing coverage
 # /aleph/renew:
