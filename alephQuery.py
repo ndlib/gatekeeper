@@ -172,7 +172,7 @@ def renewItem(event, context):
 
   aleph = Aleph(alephId)
   renewData = aleph.renew(barcode)
-  heslog.info("Returning success %s" % renewData)
+  heslog.info("Returning %s" % renewData)
   return _success(renewData)
 
 

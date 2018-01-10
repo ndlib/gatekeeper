@@ -149,7 +149,7 @@ class Aleph(RequestType):
     url = self.alephUrl
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
-    return self._format(parsed)
+    return { "user": self._format(parsed) }
 
 
   def renew(self, barcode):
