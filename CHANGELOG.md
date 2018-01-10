@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2018.2](https://github.com/ndlib/gatekeeper/tree/v2018.2) (v2018.2)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.1...v2018.2)
+
+### Bug fixes:
+- Fix aleph renew funcitonality [#32](https://github.com/ndlib/usurper/pull/32)
+
+
 ## [v2018.1](https://github.com/ndlib/gatekeeper/tree/v2018.1) (v2018.1)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.2...v2018.1)
 
