@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2018.3](https://github.com/ndlib/gatekeeper/tree/v2018.3) (v2018.3)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.2...v2018.3)
+
+### New features/enhancements:
+- Add account balance to user information [#33](https://github.com/ndlib/gatekeeper/pull/33)
+
+
 ## [v2018.2](https://github.com/ndlib/gatekeeper/tree/v2018.2) (v2018.2)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.1...v2018.2)
 

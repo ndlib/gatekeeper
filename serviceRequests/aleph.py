@@ -119,7 +119,7 @@ class Aleph(RequestType):
 
   def _format(self, parsed):
     balance = 0
-    for fine in parsed.get("fine"):
+    for fine in parsed.get("fine", []):
       isCredit = self._getZPart(fine, 31, "credit-debit") == "C"
       ammount = float(self._getZPart(fine, 31, "sum").strip("()"))
       balance += ammount if isCredit else -ammount
