@@ -118,14 +118,18 @@ class Aleph(RequestType):
 
 
   def _format(self, parsed):
-    balance = 0
-    for fine in parsed.get("fine", []):
-      isCredit = self._getZPart(fine, 31, "credit-debit") == "C"
-      ammount = float(self._getZPart(fine, 31, "sum").strip("()"))
-      balance += ammount if isCredit else -ammount
-
     if not parsed:
       return None
+
+    status = self._getZPart(parsed, 305, "bor-status")
+    balance = 0
+    # Students pay fees through Student Accounts - not the Libraries Directly
+    if status not in ['Grad', 'Undergrad']:
+      sign = parsed.get("sign", 'C')
+      balance = float(parsed.get("balance", 0.0))
+      if sign == 'D':
+        balance = -balance
+
     return {
       'name': self._getZPart(parsed, 303, "name"),
       'address1': self._getZPart(parsed, 304, "address-1"),
@@ -133,7 +137,7 @@ class Aleph(RequestType):
       'telephone': self._getZPart(parsed, 304, "telephone"),
       'telephone2': self._getZPart(parsed, 304, "telephone-2"),
       'homeLibrary': self._getZPart(parsed, 303, "home-library"),
-      'status': self._getZPart(parsed, 305, "bor-status"),
+      'status': status,
       'alephId': self._getZPart(parsed, 304, "id"),
       'balance': balance,
     }
