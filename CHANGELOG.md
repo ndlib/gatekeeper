@@ -1,6 +1,12 @@
 # Change Log
 
-## [v2018.3](https://github.com/ndlib/gatekeeper/tree/v2018.3) (v2018.3)
+## [v2018.4](https://github.com/ndlib/gatekeeper/tree/v2018.4)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.3...v2018.4)
+
+### Bug Fixes:
+- Students shouldn't see fines - they use Student accounts - make sure other fines are correct [#34](https://github.com/ndlib/gatekeeper/pull/34)
+
+## [v2018.3](https://github.com/ndlib/gatekeeper/tree/v2018.3)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.2...v2018.3)
 
 ### New features/enhancements:
@@ -11,22 +17,22 @@
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.1...v2018.2)
 
 ### Bug fixes:
-- Fix aleph renew funcitonality [#32](https://github.com/ndlib/usurper/pull/32)
+- Fix aleph renew funcitonality [#32](https://github.com/ndlib/gatekeeper/pull/32)
 
 
 ## [v2018.1](https://github.com/ndlib/gatekeeper/tree/v2018.1) (v2018.1)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.2...v2018.1)
 
 ### New features/enhancements:
-- Allow Aleph requests to specify library to query [#25](https://github.com/ndlib/usurper/pull/25)
-- Return more aleph information on findItem results [#29](https://github.com/ndlib/usurper/pull/29)
+- Allow Aleph requests to specify library to query [#25](https://github.com/ndlib/gatekeeper/pull/25)
+- Return more aleph information on findItem results [#29](https://github.com/ndlib/gatekeeper/pull/29)
 
 
 ## [v2017.2](https://github.com/ndlib/gatekeeper/tree/v2017.2) (v2017.2)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2017.1...v2017.2)
 
 ### New features/enhancements:
-- Add ability to query primo favorites [#26](https://github.com/ndlib/usurper/pull/26)
+- Add ability to query primo favorites [#26](https://github.com/ndlib/gatekeeper/pull/26)
 
 
 ## [v2017.1](https://github.com/ndlib/gatekeeper/tree/v2017.1) (v2017.1)
