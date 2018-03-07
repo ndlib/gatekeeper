@@ -1,7 +1,7 @@
 from hesburgh import heslog, hesutil
 from serviceRequests.aleph import Aleph
-from string import punctuation
 import json
+punctuation = " ."
 
 def _error(code):
   return {
@@ -100,7 +100,7 @@ def findItem(event, context):
   # for this we must iterate over all the entires, hence "iterateOnRecord"
 
   # name
-  outData["name"] = fromRecord(record, 245, subfield="a").strip().strip(punctuation)
+  outData["name"] = fromRecord(record, 245, subfield="a").strip(punctuation)
 
   # description
   description = fromRecord(record, 520)
@@ -129,7 +129,7 @@ def findItem(event, context):
     for a in iterateOnRecord(record, 506):
       accessValue = fromRecord(a, subfield=letter)
       if accessValue:
-        accessValue = accessValue.strip().strip(punctuation) \
+        accessValue = accessValue.strip(punctuation) \
                       .replace("Online access with authorization", "Notre Dame faculty, staff, and students") \
                       .replace("Access restricted to subscribers", "Notre Dame faculty, staff, and students") \
                       .replace("Unrestricted online access", "Public")
