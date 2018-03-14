@@ -1,73 +1,7 @@
 from hesburgh import heslog, hesutil
 from serviceRequests.aleph import Aleph
-import json
+from serviceRequests.helpers import xml, response
 punctuation = " ."
-
-def _error(code):
-  return {
-    "statusCode": code,
-    "headers": {
-      "Access-Control-Allow-Origin": "*",
-      "x-nd-version": hesutil.getEnv("VERSION", 0),
-    },
-  }
-
-def _success(data):
-  return {
-    "statusCode": 200,
-    "body": json.dumps(data),
-    "headers": {
-      "Access-Control-Allow-Origin": "*",
-      "x-nd-version": hesutil.getEnv("VERSION", 0),
-    },
-  }
-
-# helper so we don't have to have if logic on every field below
-def iterateOnRecord(data, idToGet, i1=None, i2=None):
-  # make sure our identifiers are strings
-  idToGet = str(idToGet)
-  if i1 is not None:
-    i1 = str(i1)
-  if i2 is not None:
-    i2 = str(i2)
-
-  # iterate over all fields, yielding only those that match our identifiers
-  for field in data:
-    if ((field["id"] == idToGet or field["label"] == idToGet) and
-        (not i1 or (i1 and field["i1"] == i1)) and
-        (not i2 or (i2 and field["i2"] == i2))
-      ):
-      yield field
-
-# helper to get first (or only) element of a field
-def fromRecord(data, idToGet=None, i1=None, i2=None, subfield=None):
-  # ensure we're using strings
-  if subfield is not None:
-    subfield = str(subfield)
-
-  # get the record, use given data if we don't have ids (gettings subfield)
-  found = None
-  if not idToGet:
-    found = data
-  else:
-    # this allows us to reuse code, we have to start a loop to deref the iterator
-    for x in iterateOnRecord(data, idToGet, i1, i2):
-      found = x
-      break
-
-  # If we want to find a subfield of the above field
-  if found and subfield:
-    for sub in found.subfield:
-      if sub["label"] == subfield:
-        # Found the desired subfield, return it's data
-        return sub.cdata.strip()
-    # Didn't find the subfield, return failure
-    return None
-  return found
-
-# helper to append to a string with a newline
-def appendDataStr(data, key, toAppend):
-  return toAppend.strip() if key not in data else ("%s\n%s" % (data.get(key, ""), toAppend.strip()))
 
 def findItem(event, context):
   itemId = event.get("pathParameters", {}).get("systemId")
@@ -77,14 +11,14 @@ def findItem(event, context):
 
   if not itemId:
     heslog.error("No system id provided")
-    return _error(400)
+    return response.error(400)
 
   aleph = Aleph()
   parsed = aleph.findItem(itemId)
   heslog.info("Got response from aleph")
   if not parsed:
     heslog.error("Nothing in parsed information")
-    return _error(500)
+    return response.error(500)
 
   # yay super nested xml documents!
   record = parsed.find_doc.record.metadata.oai_marc.varfield
@@ -100,59 +34,59 @@ def findItem(event, context):
   # for this we must iterate over all the entires, hence "iterateOnRecord"
 
   # name
-  outData["name"] = fromRecord(record, 245, subfield="a").strip(punctuation)
+  outData["name"] = xml.fromRecord(record, 245, subfield="a").strip(punctuation)
 
   # description
-  description = fromRecord(record, 520)
-  for instance in iterateOnRecord(record, 520):
+  description = xml.fromRecord(record, 520)
+  for instance in xml.iterateOnRecord(record, 520):
     # If there's a 520 with subfield 9 of value g, that's the one we want
-    if fromRecord(instance, subfield="9") == "g":
+    if xml.fromRecord(instance, subfield="9") == "g":
       description = instance
       break
-  outData["description"] = fromRecord(description, subfield="a")
+  outData["description"] = xml.fromRecord(description, subfield="a")
 
   # url (legacy)
-  outData["purl"] = fromRecord(record, 856, 4, 0, subfield="u")
+  outData["purl"] = xml.fromRecord(record, 856, 4, 0, subfield="u")
 
   # all urls with titles and notes
   urls = []
-  for url in iterateOnRecord(record, 856, 4, 0):
+  for url in xml.iterateOnRecord(record, 856, 4, 0):
     urls.append({
-      "url": fromRecord(url, subfield="u"),
-      "title": fromRecord(url, subfield=3),
-      "notes": fromRecord(url, subfield="z"),
+      "url": xml.fromRecord(url, subfield="u"),
+      "title": xml.fromRecord(url, subfield=3),
+      "notes": xml.fromRecord(url, subfield="z"),
     })
   outData["urls"] = urls
 
   # access data
   for letter in ['f', 'a', 'c']:
-    for a in iterateOnRecord(record, 506):
-      accessValue = fromRecord(a, subfield=letter)
+    for a in xml.iterateOnRecord(record, 506):
+      accessValue = xml.fromRecord(a, subfield=letter)
       if accessValue:
         accessValue = accessValue.strip(punctuation) \
                       .replace("Online access with authorization", "Notre Dame faculty, staff, and students") \
                       .replace("Access restricted to subscribers", "Notre Dame faculty, staff, and students") \
                       .replace("Unrestricted online access", "Public")
-        outData["access"] = appendDataStr(outData, "access", accessValue)
+        outData["access"] = xml.appendDataStr(outData, "access", accessValue)
 
   # includes
-  for inc in iterateOnRecord(record, 740, i2=2):
-    outData["includes"] = appendDataStr(outData, "includes", fromRecord(inc, subfield="a").strip(punctuation))
+  for inc in xml.iterateOnRecord(record, 740, i2=2):
+    outData["includes"] = xml.appendDataStr(outData, "includes", xml.fromRecord(inc, subfield="a").strip(punctuation))
 
   # meta (platform, publisher, provider)
-  for meta in iterateOnRecord(record, 710, i2=" "):
-    sub4 = fromRecord(meta, subfield=4)
-    metaValue = fromRecord(meta, subfield="a")
+  for meta in xml.iterateOnRecord(record, 710, i2=" "):
+    sub4 = xml.fromRecord(meta, subfield=4)
+    metaValue = xml.fromRecord(meta, subfield="a")
 
     if sub4 == "pltfrm":
-      outData["platform"] = appendDataStr(outData, "platform", metaValue)
+      outData["platform"] = xml.appendDataStr(outData, "platform", metaValue)
     elif sub4 == "pbl":
-      outData["publisher"] = appendDataStr(outData, "publisher", metaValue)
+      outData["publisher"] = xml.appendDataStr(outData, "publisher", metaValue)
     elif sub4 == "prv":
-      outData["provider"] = appendDataStr(outData, "provider", metaValue)
+      outData["provider"] = xml.appendDataStr(outData, "provider", metaValue)
 
   heslog.info("Returning success")
-  return _success(outData)
+  return response.success(outData)
 
 
 def renewItem(event, context):
@@ -164,16 +98,16 @@ def renewItem(event, context):
 
   if not barcode:
     heslog.error("No barcode provided")
-    return _error(400)
+    return response.error(400)
 
   if not alephId:
     heslog.error("No aleph id provided")
-    return _error(400)
+    return response.error(400)
 
   aleph = Aleph(alephId)
   renewData = aleph.renew(barcode)
   heslog.info("Returning %s" % renewData)
-  return _success(renewData)
+  return response.success(renewData)
 
 
 def updateUser(event, context):
@@ -185,15 +119,15 @@ def updateUser(event, context):
 
   if not library:
     heslog.error("No library provided")
-    return _error(400)
+    return response.error(400)
 
   if not alephId:
     heslog.error("No aleph id provided")
-    return _error(400)
+    return response.error(400)
 
   aleph = Aleph(alephId)
   updateSuccess = aleph.updateHomeLibrary(library)
   if updateSuccess:
     heslog.info("Returning success")
-    return _success({})
-  return _error(500)
+    return response.success({})
+  return response.error(500)
