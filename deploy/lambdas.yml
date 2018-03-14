@@ -94,6 +94,17 @@ Parameters:
     Description: MB
     AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
     Default: 128
+  LocationTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 30
+  LocationMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 128
 
 Outputs:
   AlephQueryArn:
@@ -128,6 +139,11 @@ Outputs:
     Value: !GetAtt Primo.Arn
   PrimoLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${PrimoLogs}
+
+  LocationArn:
+    Value: !GetAtt Location.Arn
+  LocationLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${LocationLogs}
 
 Resources:
   Aleph:
@@ -308,4 +324,33 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${Primo}
+      RetentionInDays: !Ref LogRetention
+
+  Location:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-location
+      Description: Get location resources for given netid
+      Runtime: python2.7
+      Handler: physicalAvailability.handler
+      Timeout: !Ref LocationTimeout
+      MemorySize: !Ref LocationMemorySize
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+      VpcConfig:
+        SecurityGroupIds: !Ref AlephSecurityGroups
+        SubnetIds: !Ref AlephSubnets
+  LocationPermission:
+    DependsOn: Location
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Location.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  LocationLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Location}
       RetentionInDays: !Ref LogRetention

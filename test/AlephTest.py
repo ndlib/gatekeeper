@@ -13,6 +13,7 @@ class AlephTestCase(unittest.TestCase):
 
   def setUp(self):
     os.environ["ALEPH_PATH"] = "/test_path"
+    os.environ["ALEPH_URL"] = "url"
 
     self.netid = "test_netid"
     self.handler = Aleph(self.netid)

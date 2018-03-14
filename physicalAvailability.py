@@ -13,16 +13,18 @@ def startEndYears(fields):
   yearRe = re.compile('([\d]{4})')
 
   for publishInfo in xml.iterateOnRecord(fields, 866):
-    startYear = 0
-    endYear = 9999
+    startYear = start
+    endYear = end
 
     dateInfo = xml.fromRecord(publishInfo, subfield='a')
     date = yearRe.findall(dateInfo)
     if len(date) == 1:
-      startYear = date
+      startYear = date[0]
     elif len(date) == 2:
       startYear, endYear = date
-    # else we have <=0 or >2 years, which... ???
+    else:
+      # else we have <=0 or >2 years, which... ???
+      continue
 
     startYear, endYear = (int(startYear), int(endYear))
     start = min(start, startYear)
@@ -39,6 +41,8 @@ def startEndYears(fields):
 
 # query aleph for items that match the isbn or issn + year range
 def queryAlephForMatch(isbn, issn, year):
+  year = int(year)
+
   # WTP is resource type
   query = "%s=%s+NOT+WTP=electronic+resource"
   # 020 and 022 are field searches
@@ -66,7 +70,7 @@ def queryAlephForMatch(isbn, issn, year):
     if year and issn:
       start, end = startEndYears(fields)
       # if we have an article and a year, entry is only valid if given year is within range
-      isValidEntry = year > start and year < end
+      isValidEntry = (year >= start) and (year <= end)
 
     if isValidEntry:
       # save this aleph id as valid entry
@@ -79,7 +83,7 @@ def queryAlephForMatch(isbn, issn, year):
 # primo item records that have physical holdings
 # returned data contains record ids, location and availability information
 def handler(event, context):
-  params = event.get("pathParameters", {})
+  params = event.get("queryStringParameters", {})
   year = int(params.get("year", 0))
   isbn = params.get("isbn")
   issn = params.get("issn")
