@@ -1,5 +1,15 @@
 # Change Log
 
+## [v2018.5](https://github.com/ndlib/gatekeeper/tree/v2018.5)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.4...v2018.5)
+
+### New Features:
+- Add `/location` endpoint to get the physical holdings location of an issn or isbn [#36](https://github.com/ndlib/gatekeeper/pull/36)
+
+### Bug Fixes:
+- Don't strip characters (like ()) from the ends of titles. Only strip `.` and ` ` [#35](https://github.com/ndlib/gatekeeper/pull/35)
+
+
 ## [v2018.4](https://github.com/ndlib/gatekeeper/tree/v2018.4)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.3...v2018.4)
 
