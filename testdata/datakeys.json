@@ -3,5 +3,7 @@
   "alephItem": { "load_file": "alephItem.json" },
   "illiad_checkedOut": { "load_file": "illiadCheckedOut.json" },
   "illiad_pending": { "load_file": "illiadPending.json" },
-  "illiad_web": { "load_file": "illiadWeb.json" }
+  "illiad_web": { "load_file": "illiadWeb.json" },
+  "primoQueryResponse": { "load_file": "primoQueryResponse.json" },
+  "alephQueryResultSet": { "load_file": "alephQueryResultSet.json" }
 }

@@ -39,6 +39,7 @@ Artifacts:
         - ../testdata/
         - ../alephQuery.py
         - ../serviceHandler.py
+        - ../physicalAvailability.py
 
 LambdaEnv:
   Global:
@@ -118,3 +119,21 @@ LambdaEnv:
         -
           Name: PRIMO_DISPLAY_URL
           Value: ${PRIMO_DISPLAY_URL}
+
+    - FunctionName: $SERVICE-$STAGE-location
+      Environment:
+        -
+          Name: ALEPH_URL
+          Value: ${ALEPH_URL}
+        -
+          Name: ALEPH_PATH
+          Value: ${ALEPH_PATH}
+        -
+          Name: PRIMO_URL
+          Value: ${PRIMO_URL}
+        -
+          Name: PRIMO_DISPLAY_URL
+          Value: ${PRIMO_DISPLAY_URL}
+        -
+          Name: PRIMO_SEARCH
+          Value: ${PRIMO_SEARCH}

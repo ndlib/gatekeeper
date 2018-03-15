@@ -26,6 +26,9 @@ Parameters:
   AlephUpdateArn:
     Type: String
     Description: Arn for the AlephUpdate Lambda
+  LocationArn:
+    Type: String
+    Description: Arn for the Location Lambda
   AuthorizerName:
     Type: String
     Description: The name of the authorizer lambda
@@ -444,6 +447,82 @@ Resources:
                   application/json: "{statusCode:200}"
                 passthroughBehavior: "when_no_match"
                 type: "mock"
+          /location:
+            get:
+              parameters:
+              - name: "issn"
+                in: "query"
+                required: false
+                type: "string"
+                description: "The issn of the item to search for"
+              - name: "isbn"
+                in: "query"
+                required: false
+                type: "string"
+                description: "The isbn of the item to search for"
+              - name: "year"
+                in: "query"
+                required: false
+                type: "string"
+                description: "The year of the journal to search for (only used with issn)"
+              responses:
+                "200":
+                  description: Get Physical locations and primo record ids of an item
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                  schema:
+                    $ref: '#/definitions/Locations'
+                default:
+                  description: Unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Join:
+                    - ''
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !Ref LocationArn
+                      - "/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Credentials:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Credentials: "'false'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{statusCode:200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
         securityDefinitions:
           jwt:
             type: "apiKey"
@@ -494,5 +573,23 @@ Resources:
                 format: int32
               message:
                 type: string
-
+          Location:
+            type: object
+            properties:
+              recordId:
+                type: string
+              subLibrary:
+                type: string
+              library:
+                type: string
+              institution:
+                type: string
+              callNumber:
+                type: string
+              availability:
+                type: string
+          Locations:
+            type: array
+            items:
+              $ref: '#/definitions/Location'
 

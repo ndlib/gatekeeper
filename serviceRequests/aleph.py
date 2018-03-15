@@ -152,6 +152,24 @@ class Aleph(RequestType):
     return untangle.parse(stringResponse)
 
 
+  def query(self, queryString):
+    path = "/X?op=find&base=ndu01pub&request=%s" % queryString
+
+    heslog.info("Running query %s" % queryString)
+    stringResponse = self._makeReq(self.url + path, {})
+    parsed = self._parseXML(stringResponse)
+
+    setNum = parsed.get("set_number")
+    recordCount = int(parsed.get("no_records", 0))
+
+    if setNum and recordCount:
+      heslog.info("Got aleph set %s with %s records" % (setNum, recordCount))
+      path = "/X?op=present&base=ndu01pub&set_number=%s&set_entry=1-%s" % (setNum, recordCount)
+      stringResponse = self._makeReq(self.url + path, {})
+      return untangle.parse(stringResponse)
+    return None
+
+
   def userData(self):
     headers = {
       'Content-Type': 'xml',

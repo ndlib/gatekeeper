@@ -10,6 +10,7 @@ hestest.init(__file__, "../testdata")
 
 class IlliadTestCase(unittest.TestCase):
   def setUp(self):
+    os.environ["ILLIAD_URL"] = "url"
     os.environ["ILLIAD_KEY"] = "test_key"
 
     self.netid = "test_netid"
