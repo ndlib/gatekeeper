@@ -9,7 +9,9 @@ def startEndYears(fields):
   start = 9999
   end = 0
 
-  # to get sequences of 4 numbers (years)
+  # to get everything within braces, this could be (2000) or (1999/2000), we split later on
+  yearGroupRe = re.compile('\((.*?)\)')
+  # get sequences of 4 numbers, these should be years (if used on data from above)
   yearRe = re.compile('([\d]{4})')
 
   for publishInfo in xml.iterateOnRecord(fields, 866):
@@ -17,18 +19,15 @@ def startEndYears(fields):
     endYear = end
 
     dateInfo = xml.fromRecord(publishInfo, subfield='a')
-    date = yearRe.findall(dateInfo)
-    if len(date) == 1:
-      startYear = date[0]
-    elif len(date) == 2:
-      startYear, endYear = date
-    else:
-      # else we have <=0 or >2 years, which... ???
-      continue
+    date = yearGroupRe.findall(dateInfo)
 
-    startYear, endYear = (int(startYear), int(endYear))
-    start = min(start, startYear)
-    end = max(end, endYear)
+    # find the min/max years from all specified ranges
+    for d in date:
+      split = yearRe.findall(d)
+      for year in split:
+        year = int(year)
+        start = min(start, year)
+        end = max(end, year)
 
   # if there is a note that spcifies this journal as "current", "remove" end year
   for location in xml.iterateOnRecord(fields, 852):
@@ -56,7 +55,7 @@ def queryAlephForMatch(isbn, issn, year):
 
   if not data:
     heslog.error("No data found for entry")
-    return 500
+    return 204
 
   validEntries = []
   for record in data.present.record:
