@@ -9,22 +9,55 @@ def startEndYears(fields):
   start = 9999
   end = 0
 
-  # to get everything within braces, this could be (2000) or (1999/2000), we split later on
-  yearGroupRe = re.compile('\((.*?)\)')
-  # get sequences of 4 numbers, these should be years (if used on data from above)
+  # All documented 866:a cases
+  # 2004:no.1-2004:no.6
+  # 1995-2004
+  # 2003:winter-2003:spring
+  # 1998:2-1998:4
+  # 2005:stycz.-2005:luty=2485-2492
+  # v.16(1994/1995)-v.19(2001/2002)
+  # v.20:no.1(2002:July)-v.20:no.2(2002:Nov.)
+  # v.275:no.8728(1995:Oct.21)-v.280:no.8844(1998:Feb.7)
+  # v.1:no.1(1967)-v.8:no.3(2004)
+  # v.25:no.25(2001:out.16/24)-v.26:no.15(2002:maio 16/XX)
+
+  # Years are:
+  # a. inside parens
+  # b. no parens:
+    # before an "="
+      # 1. the start of a string
+      # 2. directly follows a dash
+      # 3. directly follows a slash
+
+  # to get everything within braces, we split with "yearRe"
+  parensRe = re.compile('\((.*?)\)')
+  # get sequences of 4 numbers, these should be years (used on data from parensRe)
   yearRe = re.compile('([\d]{4})')
+
+  # Should match \A = start of string, / or - and then 4 numbers (the year)
+  noParensRe = re.compile('[\A/-]([\d]{4})')
 
   for publishInfo in xml.iterateOnRecord(fields, 866):
     startYear = start
     endYear = end
 
     dateInfo = xml.fromRecord(publishInfo, subfield='a')
-    date = yearGroupRe.findall(dateInfo)
 
-    # find the min/max years from all specified ranges
-    for d in date:
-      split = yearRe.findall(d)
-      for year in split:
+    # if there are parens, year is inside them
+    if '(' in dateInfo:
+      dates = parensRe.findall(dateInfo)
+      for d in dates:
+        split = yearRe.findall(d)
+        for year in split:
+          year = int(year)
+          start = min(start, year)
+          end = max(end, year)
+    else:
+      # split on "=" to be correct in the following case
+      # 2005:stycz.-2005:luty=2485-2492
+      dateInfo = dateInfo.split("=")[0]
+      dates = noParensRe.findall(dateInfo)
+      for year in dates:
         year = int(year)
         start = min(start, year)
         end = max(end, year)
