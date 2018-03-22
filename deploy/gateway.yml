@@ -52,6 +52,10 @@ Resources:
       Description: Get personalized library resources
       Body:
         swagger: "2.0"
+        info:
+          title: Gatekeeper
+          description: Get library resource information for a user
+          version: "1.0.0"
         schemes:
         - "https"
         paths:
@@ -884,4 +888,3 @@ Resources:
             type: array
             items:
               $ref: '#/definitions/Location'
-
