@@ -487,13 +487,13 @@ Resources:
                 passthroughBehavior: "when_no_match"
                 type: "mock"
           "/aleph/{systemId}":
-            get:
-              parameters:
+            parameters:
               - in: path
                 name: systemId
                 type: integer
                 required: true
                 description: The aleph item system number
+            get:
               responses:
                 200:
                   description: Aleph item data
