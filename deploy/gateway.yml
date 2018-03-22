@@ -801,7 +801,7 @@ Resources:
               purl:
                 type: string
               urls:
-                type: list
+                type: array
                 items:
                   type: object
                   properties:
