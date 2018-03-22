@@ -55,14 +55,9 @@ Resources:
         schemes:
         - "https"
         paths:
-          /aleph:
+          /aleph/pending:
             get:
               parameters:
-              - name: "type"
-                in: "query"
-                required: true
-                type: "string"
-                description: "The type of information to get (borrowed, pending, user)"
               - name: "library"
                 in: "query"
                 required: false
@@ -71,7 +66,7 @@ Resources:
                 enum: [ndu50, hcc50, bci50, smc50]
               responses:
                 "200":
-                  description: Get personal Aleph info
+                  description: Pending aleph items for the user
                   headers:
                     Access-Control-Allow-Origin:
                       type: "string"
@@ -80,7 +75,7 @@ Resources:
                     Access-Control-Allow-Headers:
                       type: "string"
                   schema:
-                    $ref: '#/definitions/PendList'
+                    $ref: '#/definitions/AlephItemList'
                 "401":
                   description: Unauthorized - most often because of invalid token
                 "404":
@@ -133,17 +128,18 @@ Resources:
                   application/json: "{statusCode:200}"
                 passthroughBehavior: "when_no_match"
                 type: "mock"
-          /illiad:
+          /aleph/borrowed:
             get:
               parameters:
-              - name: "type"
+              - name: "library"
                 in: "query"
-                required: true
+                required: false
                 type: "string"
-                description: "The type of information to get (borrowed, pending, user)"
+                description: "The library id to query (defaults to ndu)"
+                enum: [ndu50, hcc50, bci50, smc50]
               responses:
                 "200":
-                  description: Get personal Illiad info
+                  description: Borrowed aleph items for the user
                   headers:
                     Access-Control-Allow-Origin:
                       type: "string"
@@ -152,7 +148,212 @@ Resources:
                     Access-Control-Allow-Headers:
                       type: "string"
                   schema:
-                    $ref: '#/definitions/PendList'
+                    $ref: '#/definitions/AlephItemList'
+                "401":
+                  description: Unauthorized - most often because of invalid token
+                "404":
+                  description: The netid was not found
+                default:
+                  description: Unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              security:
+              - jwt: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Join:
+                    - ''
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !Ref AlephArn
+                      - "/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Credentials:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Credentials: "'false'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{statusCode:200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /aleph/user:
+            get:
+              parameters:
+              - name: "library"
+                in: "query"
+                required: false
+                type: "string"
+                description: "The library id to query (defaults to ndu)"
+                enum: [ndu50, hcc50, bci50, smc50]
+              responses:
+                "200":
+                  description: Personal Aleph info
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                  schema:
+                    $ref: '#/definitions/AlephUserInfo'
+                "401":
+                  description: Unauthorized - most often because of invalid token
+                "404":
+                  description: The netid was not found
+                default:
+                  description: Unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              security:
+              - jwt: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Join:
+                    - ''
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !Ref AlephArn
+                      - "/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Credentials:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Credentials: "'false'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{statusCode:200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /illiad/borrowed:
+            get:
+              responses:
+                "200":
+                  description: Illiad borrowed items
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                  schema:
+                    $ref: '#/definitions/IlliadItemList'
+                "401":
+                  description: Unauthorized - most often because of invalid token
+                "404":
+                  description: The netid was not found
+                default:
+                  description: Unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              security:
+              - jwt: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Join:
+                    - ''
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !Ref IlliadArn
+                      - "/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Credentials:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Credentials: "'false'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{statusCode:200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /illiad/pending:
+            get:
+              responses:
+                "200":
+                  description: Illiad pending itmes
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                  schema:
+                    $ref: '#/definitions/IlliadItemList'
                 "401":
                   description: Unauthorized - most often because of invalid token
                 "404":
@@ -228,8 +429,6 @@ Resources:
                       type: "string"
                     Access-Control-Allow-Headers:
                       type: "string"
-                  schema:
-                    $ref: '#/definitions/PendList'
                 "401":
                   description: Unauthorized - most often because of invalid token
                 "404":
@@ -284,7 +483,30 @@ Resources:
                 type: "mock"
           "/aleph/{systemId}":
             get:
-              responses: {}
+              parameters:
+              - in: path
+                name: systemId
+                type: integer
+                required: true
+                description: The aleph item system number
+              responses:
+                200:
+                  description: Aleph item data
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                  schema:
+                    $ref: '#/definitions/AlephQueryInfo'
+                404:
+                  description: The item was not found
+                default:
+                  description: Unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
               x-amazon-apigateway-integration:
                 uri:
                   Fn::Join:
@@ -329,6 +551,8 @@ Resources:
                 type: "mock"
           /aleph/renew:
             post:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -389,6 +613,8 @@ Resources:
                 type: "mock"
           /aleph/update:
             post:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -542,29 +768,95 @@ Resources:
               authorizerResultTtlInSeconds: 300
               type: "token"
         definitions:
-          Item:
+          AlephUserInfo:
+            type: object
+            properties:
+              name:
+                type: string
+              address1:
+                type: string
+              address2:
+                type: string
+              telephone:
+                type: string
+              telephone2:
+                type: string
+              homeLibrary:
+                type: string
+              status:
+                type: string
+              alephId:
+                type: string
+              balance:
+                type: string
+          AlephQueryInfo:
+            type: object
+            properties:
+              name:
+                type: string
+              purl:
+                type: string
+              urls:
+                type: list
+                items:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                    title:
+                      type: string
+                    notes:
+                      type: string
+              description:
+                type: string
+              access:
+                type: string
+              includes:
+                type: string
+              platform:
+                type: string
+              publisher:
+                type: string
+              provider:
+                type: string
+          AlephItem:
             type: object
             properties:
               title:
                 type: string
-          OutList:
+              author:
+                type: string
+              dueDate:
+                type: string
+              published:
+                type: string
+              status:
+                type: string
+              barcode:
+                type: string
+          AlephItemList:
+            type: array
+            items:
+              $ref: '#/definitions/AlephItem'
+          IlliadItem:
             type: object
             properties:
-              user:
+              title:
                 type: string
-              checkedOut:
-                type: array
-                items:
-                  $ref: '#/definitions/Item'
-          PendList:
-            type: object
-            properties:
-              user:
+              author:
                 type: string
-              pending:
-                type: array
-                items:
-                  $ref: '#/definitions/Item'
+              dueDate:
+                type: string
+              published:
+                type: string
+              status:
+                type: string
+              transactionNumber:
+                type: string
+          IlliadItemList:
+            type: array
+            items:
+              $ref: '#/definitions/IlliadItem'
           Error:
             type: object
             properties:
