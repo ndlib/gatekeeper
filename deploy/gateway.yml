@@ -103,6 +103,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -176,6 +178,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -249,6 +253,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -315,6 +321,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -381,6 +389,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -457,6 +467,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -525,6 +537,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -587,6 +601,8 @@ Resources:
               security:
               - jwt: []
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -649,6 +665,8 @@ Resources:
               security:
               - jwt: []
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
@@ -725,6 +743,8 @@ Resources:
                 httpMethod: "POST"
                 type: "aws_proxy"
             options:
+              tags:
+              - skipTests
               consumes:
               - "application/json"
               produces:
