@@ -422,6 +422,7 @@ Resources:
               - name: "aleph-id"
                 in: query
                 required: true
+                type: "string"
                 description: "the aleph id of the user"
               responses:
                 "200":
