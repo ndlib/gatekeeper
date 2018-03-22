@@ -507,7 +507,7 @@ Resources:
                 description: The aleph item system number
             get:
               responses:
-                200:
+                "200":
                   description: Aleph item data
                   headers:
                     Access-Control-Allow-Origin:
@@ -518,7 +518,7 @@ Resources:
                       type: "string"
                   schema:
                     $ref: '#/definitions/AlephQueryInfo'
-                404:
+                "404":
                   description: The item was not found
                 default:
                   description: Unexpected error
