@@ -21,7 +21,7 @@ class AlephTestCase(unittest.TestCase):
 
 
   def test_user_data_format(self):
-    data = self.handler.request("user").get("user")
+    data = self.handler.request("user")
     self.handler._makeReq.assert_called_with(self.handler.url + "/test_path", { 'Content-Type': 'xml' })
 
     self.assertIn("name", data)
@@ -38,7 +38,7 @@ class AlephTestCase(unittest.TestCase):
 
 
   def test_book_format(self):
-    data = self.handler.request("borrowed").get("checkedOut")
+    data = self.handler.request("borrowed")
     self.handler._makeReq.assert_called_with(self.handler.url + "/test_path", { 'Content-Type': 'xml' })
 
     self.assertIsInstance(data, list)

@@ -178,7 +178,7 @@ class Aleph(RequestType):
     url = self.alephUrl
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
-    return { "user": self._format(parsed) }
+    return self._format(parsed)
 
 
   def renew(self, barcode):
@@ -269,7 +269,7 @@ class Aleph(RequestType):
     items = parsed.get('item-l', [])
     if type(items) is dict:
       items = [items]
-    return { "web": [], "checkedOut": [ self._makeAlephItem(i) for i in items ] }
+    return [ self._makeAlephItem(i) for i in items ]
 
 
   def pending(self):
@@ -290,5 +290,5 @@ class Aleph(RequestType):
     items = parsed.get('item-h', [])
     if type(items) is dict:
       items = [items]
-    return { "pending": [ self._makeAlephItem(i, True) for i in items ] }
+    return [ self._makeAlephItem(i, True) for i in items ]
 

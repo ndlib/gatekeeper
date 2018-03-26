@@ -68,10 +68,7 @@ class Illiad(RequestType):
 
 
   def borrowed(self):
-    return {
-      "checkedOut": self.checkedOut(),
-      "web": self.web(),
-    }
+    return self.checkedOut() + self.web()
 
 
   def checkedOut(self):
@@ -86,4 +83,4 @@ class Illiad(RequestType):
 
   def pending(self):
     path = "<<netid>>?$filter=(TransactionStatus%20ne%20%27Request%20Finished%27)%20and%20not%20startswith(TransactionStatus,%20%27Cancel%27)%20and%20not%20(TransactionStatus%20eq%20%27Delivered%20to%20Web%27)%20and%20not%20(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"
-    return { "pending": self._illiad(path, "pending") }
+    return self._illiad(path, "pending")

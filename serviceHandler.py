@@ -7,8 +7,10 @@ from serviceRequests.helpers import response
 hestest.init(__file__, "testdata")
 
 def aleph(event, context):
-  queryParams = event.get("queryStringParameters", {})
-  requestType = queryParams.get("type", None)
+  path = event.get("path")
+  requestType = path.split('/')[-1]
+
+  queryParams = event.get("queryStringParameters") or {}
   library = queryParams.get("library")
   netid = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
 
@@ -35,7 +37,8 @@ def aleph(event, context):
 
 
 def illiad(event, context):
-  requestType = event.get("queryStringParameters", {}).get("type", None)
+  path = event.get("path")
+  requestType = path.split('/')[-1]
   netid = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
 
   heslog.addLambdaContext(event, context, fn="illiad", requestType=requestType)

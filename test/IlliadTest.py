@@ -61,7 +61,7 @@ class IlliadTestCase(unittest.TestCase):
   def test_pending(self):
     self.handler._makeReq = Mock(return_value=hestest.get("t_heslib01", {}).get("illiad_pending"))
 
-    data = self.handler.pending().get("pending")
+    data = self.handler.pending()
     headers = { 'Content-Type': 'application/json', 'ApiKey': 'test_key' }
     url = self.handler.url
 
