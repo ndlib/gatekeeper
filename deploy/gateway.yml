@@ -726,6 +726,15 @@ Resources:
                       type: "string"
                   schema:
                     $ref: '#/definitions/Locations'
+                "204":
+                  description: No location information found
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
                 default:
                   description: Unexpected error
                   schema:
@@ -816,6 +825,9 @@ Resources:
                 type: string
           AlephQueryInfo:
             type: object
+            required:
+              - name
+              - description
             properties:
               name:
                 type: string
