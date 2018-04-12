@@ -1,5 +1,15 @@
 # Change Log
 
+## [v2018.6](https://github.com/ndlib/gatekeeper/tree/v2018.6)
+[Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.5...v2018.6)
+
+### Changes:
+- Split the api into multiple endpoints instead of using query params to make testing easier [#38](https://github.com/ndlib/gatekeeper/pull/38)
+
+### Bug Fixes:
+- Handle all documented year formats for physical availability [#37](https://github.com/ndlib/gatekeeper/pull/37)
+
+
 ## [v2018.5](https://github.com/ndlib/gatekeeper/tree/v2018.5)
 [Full Changelog](https://github.com/ndlib/gatekeeper/compare/v2018.4...v2018.5)
 
