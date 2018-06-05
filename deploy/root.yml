@@ -33,27 +33,8 @@ Outputs:
     Value: !GetAtt GatewayStack.Outputs.GatewayId
 
 Resources:
-  RolesStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL:
-        Fn::Sub: https://s3.amazonaws.com/${TemplateBucket}/${TemplateFolder}/roles.yml
-      Parameters:
-        ServiceName: !Ref ServiceName
-
-  KeysStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: RolesStack
-    Properties:
-      TemplateURL:
-        Fn::Sub: https://s3.amazonaws.com/${TemplateBucket}/${TemplateFolder}/kms.yml
-      Parameters:
-        ServiceName: !Ref ServiceName
-        RoleArn: !GetAtt RolesStack.Outputs.RoleArn
-
   LambdasStack:
     Type: AWS::CloudFormation::Stack
-    DependsOn: RolesStack
     Properties:
       TemplateURL:
         Fn::Sub: https://s3.amazonaws.com/${TemplateBucket}/${TemplateFolder}/lambdas.yml
@@ -61,7 +42,7 @@ Resources:
         ServiceName: !Ref ServiceName
         SourceBucket: !Ref TemplateBucket
         SourceKey: !Sub ${TemplateFolder}/code.zip
-        RoleArn: !GetAtt RolesStack.Outputs.RoleArn
+        RoleArn: !ImportValue LambdaVPCServiceRole
         AlephSecurityGroups: !Ref AlephSecurityGroups
         AlephSubnets: !Ref AlephSubnets
         Version: !Ref Version
