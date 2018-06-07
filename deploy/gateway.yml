@@ -20,6 +20,9 @@ Parameters:
   AlephQueryArn:
     Type: String
     Description: Arn for the AlephQuery Lambda
+  AlephCircHistoryArn:
+    Type: String
+    Description: Arn for direct circ history query lambda
   AlephRenewArn:
     Type: String
     Description: Arn for the AlephRenew Lambda
@@ -248,6 +251,78 @@ Resources:
                       - !Ref AWS::Region
                       - ":lambda:path/2015-03-31/functions/"
                       - !Ref AlephArn
+                      - "/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              tags:
+              - skipTests
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Credentials:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Credentials: "'false'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{statusCode:200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /aleph/circhistory:
+            get:
+              parameters:
+              - name: "aleph-id"
+                in: "header"
+                required: true
+                type: "string"
+                description: "The aleph id of the user to query for"
+              responses:
+                "200":
+                  description: Personal Aleph info
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                  schema:
+                    $ref: '#/definitions/AlephCircHistory'
+                "401":
+                  description: Unauthorized - most often because of invalid token
+                default:
+                  description: Unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              security:
+              - jwt: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Join:
+                    - ''
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !Ref AlephCircHistoryArn
                       - "/invocations"
                 passthroughBehavior: "when_no_match"
                 httpMethod: "POST"
@@ -822,6 +897,37 @@ Resources:
               alephId:
                 type: string
               balance:
+                type: string
+          AlephCircHistory:
+            type: array
+            items:
+              $ref: '#/definitions/AlephCircItem'
+          AlephCircItem:
+            type: object
+            properties:
+              loan_number:
+                type: number
+              loan_date:
+                type: string
+              returned:
+                type: number
+              bib_number:
+                type: string
+              author:
+                type: string
+              title:
+                type: string
+              publisher:
+                type: string
+              year_published:
+                type: number
+              item_number:
+                type: string
+              barcode:
+                type: string
+              call_number:
+                type: string
+              volume:
                 type: string
           AlephQueryInfo:
             type: object

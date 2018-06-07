@@ -1,5 +1,6 @@
 from hesburgh import heslog, hesutil
 from serviceRequests.aleph import Aleph
+from serviceRequests.alephDirectSql import AlephOracle
 from serviceRequests.helpers import xml, response
 punctuation = " ."
 
@@ -108,6 +109,21 @@ def renewItem(event, context):
   renewData = aleph.renew(barcode)
   heslog.info("Returning %s" % renewData)
   return response.success(renewData)
+
+
+def getUserCircHistory(event, context):
+  params = event.get("headers", {})
+  alephId = params.get("aleph-id")
+  heslog.addLambdaContext(event, context)
+
+  if not alephId:
+    heslog.error("No aleph id provided")
+    return response.error(400)
+
+  direct = AlephOracle()
+  data = direct.userCircHistory(alephId)
+  heslog.info("Returning success")
+  return response.success(data)
 
 
 def updateUser(event, context):

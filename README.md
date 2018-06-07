@@ -6,8 +6,16 @@ run `./setup.sh`
 
 ## Deploy
 ### Requirements
-[hesdeploy](https://github.com/ndlib/hesburgh_utilities/blob/master/scripts/HESDEPLOY.md) (pip install hesdeploy)
-Access to
+- [hesdeploy](https://github.com/ndlib/hesburgh_utilities/blob/master/scripts/HESDEPLOY.md) (pip install hesdeploy)
+- Access to corpfs
+- AWS Credentials
+- Oracle libs
+  - Assume libnd `wse-admin` role and run `./oracleLinux.sh` or `./oracleMac.sh` to download
+    these to the `lib` folder (linux is required for lambda)
+
+### To deploy
+- Source `.../Departmental/Infrastructure/vars/WSE/secret_[stage]/gatekeeper/serverless-env` before deploying.
+- Assume appropriate AWS role and run `hesdeploy`
 
 ## API
 Retrieve aleph information about a user denoted by the JWT
@@ -43,4 +51,11 @@ Update Aleph home library for user specified by aleph-id
 post /aleph/update?library=[libraryId]&aleph-id=[alephId]
 headers:
   Authorization: [JWT]
+```
+Get circ history for user specified by aleph-id
+```
+GET /aleph/circhistory
+headers:
+  Authorization: [JWT]
+  aleph-id: [id]
 ```
