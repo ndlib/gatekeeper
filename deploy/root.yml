@@ -14,6 +14,19 @@ Parameters:
   TemplateFolder:
     Type: String
     Description: Location of template files
+  AlephSecurityGroups:
+    Type: String
+    Description: The security group(s) required for aleph
+  AlephSubnets:
+    Type: String
+    Description: The subnet(s) required for aleph
+  AuthorizerName:
+    Type: String
+    Description: Name of the lambda authorizer
+    Default: "jwt-auth-prod"
+  Version:
+    Type: String
+    Description: The git verison of this deployment
 
 Outputs:
   GatewayId:
@@ -34,7 +47,10 @@ Resources:
         ServiceName: !Ref ServiceName
         SourceBucket: !Ref TemplateBucket
         SourceKey: !Sub ${TemplateFolder}/code.zip
-        RoleArn: !GetAtt LambdaServiceRole
+        RoleArn: !ImportValue LambdaVPCServiceRole
+        AlephSecurityGroups: !Ref AlephSecurityGroups
+        AlephSubnets: !Ref AlephSubnets
+        Version: !Ref Version
 
   GatewayStack:
     Type: AWS::CloudFormation::Stack
@@ -45,6 +61,11 @@ Resources:
       Parameters:
         ServiceName: !Ref ServiceName
         Stage: !Ref Stage
-        BorrowedArn: !GetAtt LambdasStack.Outputs.BorrowedArn
-        PendingArn: !GetAtt LambdasStack.Outputs.PendingArn
+        AlephArn: !GetAtt LambdasStack.Outputs.AlephArn
+        IlliadArn: !GetAtt LambdasStack.Outputs.IlliadArn
+        PrimoArn: !GetAtt LambdasStack.Outputs.PrimoArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
+        AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
+        AlephUpdateArn: !GetAtt LambdasStack.Outputs.AlephUpdateArn
+        LocationArn: !GetAtt LambdasStack.Outputs.LocationArn
+        AuthorizerName: !Ref AuthorizerName

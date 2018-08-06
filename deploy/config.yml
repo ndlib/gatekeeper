@@ -16,6 +16,12 @@ Stacks:
         Stage: $STAGE
         TemplateBucket: $DEPLOY_BUCKET
         TemplateFolder: $DEPLOY_FOLDER
+        AlephSecurityGroups: "sg-bd3e9cc1,sg-2e15b752"
+        AlephSubnets: subnet-fee3a4d3
+        AuthorizerName: ${AUTHORIZER_NAME}
+        Version: ${GIT_VERSION}
+      Gateways:
+        - GatewayId
 
 Artifacts:
   Templates:
@@ -27,12 +33,11 @@ Artifacts:
       Name: code
       Files:
         - ../hesburgh/
-        - ../lambdaRequests/
         - ../serviceRequests/
         - ../testdata/
         - ../alephQuery.py
-        - ../joinHandler.py
         - ../serviceHandler.py
+        - ../physicalAvailability.py
 
 LambdaEnv:
   Global:
@@ -46,9 +51,6 @@ LambdaEnv:
         -
           Name: ALEPH_URL
           Value: ${ALEPH_URL}
-        -
-          Name: ALEPH_ITEM_PATH
-          Value: ${ALEPH_ITEM_PATH}
 
     - FunctionName: $SERVICE-$STAGE-alephQuery
       Environment:
@@ -62,6 +64,42 @@ LambdaEnv:
           Name: ALEPH_ITEM_PATH
           Value: ${ALEPH_ITEM_PATH}
 
+    - FunctionName: $SERVICE-$STAGE-alephRenew
+      Environment:
+        -
+          Name: ALEPH_PATH
+          Value: ${ALEPH_PATH}
+        -
+          Name: ALEPH_URL
+          Value: ${ALEPH_URL}
+        -
+          Name: ALEPH_ITEM_PATH
+          Value: ${ALEPH_ITEM_PATH}
+        -
+          Name: ALEPH_RENEW_PATH
+          Value: ${ALEPH_RENEW_PATH}
+
+    - FunctionName: $SERVICE-$STAGE-alephUpdate
+      Environment:
+        -
+          Name: ALEPH_PATH
+          Value: ${ALEPH_PATH}
+        -
+          Name: ALEPH_URL
+          Value: ${ALEPH_URL}
+        -
+          Name: ALEPH_ITEM_PATH
+          Value: ${ALEPH_ITEM_PATH}
+        -
+          Name: ALEPH_UPDATE_BODY
+          Value: ${ALEPH_UPDATE_BODY}
+        -
+          Name: ALEPH_USER
+          Value: ${ALEPH_USER}
+        -
+          Name: ALEPH_PASS
+          Value: ${ALEPH_PASS}
+
     - FunctionName: $SERVICE-$STAGE-illiad
       Environment:
         -
@@ -70,3 +108,30 @@ LambdaEnv:
         -
           Name: ILLIAD_URL
           Value: ${ILLIAD_URL}
+
+    - FunctionName: $SERVICE-$STAGE-primo
+      Environment:
+        -
+          Name: PRIMO_URL
+          Value: ${PRIMO_URL}
+        -
+          Name: PRIMO_DISPLAY_URL
+          Value: ${PRIMO_DISPLAY_URL}
+
+    - FunctionName: $SERVICE-$STAGE-location
+      Environment:
+        -
+          Name: ALEPH_URL
+          Value: ${ALEPH_URL}
+        -
+          Name: ALEPH_PATH
+          Value: ${ALEPH_PATH}
+        -
+          Name: PRIMO_URL
+          Value: ${PRIMO_URL}
+        -
+          Name: PRIMO_DISPLAY_URL
+          Value: ${PRIMO_DISPLAY_URL}
+        -
+          Name: PRIMO_SEARCH
+          Value: ${PRIMO_SEARCH}

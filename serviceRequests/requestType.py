@@ -7,20 +7,7 @@ class RequestType(object):
     self.netid = netid
     self.name = "Empty"
 
-    self.callbacks = {
-      'checkedOut': self._defaultList,
-      'web': self._defaultList,
-      'pending': self._defaultList,
-      'user': self._defaultDict,
-    }
-
-
-  def _defaultList(self):
-    return []
-
-
-  def _defaultDict(self):
-    return {}
+    self.callbacks = {}
 
 
   def _formatUrl(self, base, path):
@@ -44,10 +31,7 @@ class RequestType(object):
 
 
   def _setCallback(self, callType, callback):
-    if callType in self.callbacks:
-      self.callbacks[callType] = callback
-    else:
-      heslog.error("%s is not a registered callback type" % callType)
+    self.callbacks[callType] = callback
 
 
   def serviceName(self):
@@ -58,5 +42,5 @@ class RequestType(object):
     if callType in self.callbacks:
       return self.callbacks[callType]()
     else:
-      heslog.error("%s is not a registered callback type" % callType)
-
+      heslog.error("%s is not a registered callback type for %s" % (callType, self.name))
+      return None

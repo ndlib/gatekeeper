@@ -1,9 +1,9 @@
 from hesburgh import heslog
 import unittest
 import os
-from test import AlephTest, IlliadTest
+from test import AlephTest, IlliadTest, AlephQueryTest, PhysicalAvailabilityTest
 
-modules = [AlephTest, IlliadTest]
+modules = [AlephTest, IlliadTest, AlephQueryTest, PhysicalAvailabilityTest]
 
 tests = []
 for module in modules:

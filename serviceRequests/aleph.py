@@ -1,19 +1,23 @@
 from hesburgh import heslog, hesutil, hestest
 import xml.etree.ElementTree as ET
 from requestType import RequestType
+import urllib2
+import untangle
 
 
 class Aleph(RequestType):
   """docstring for Aleph"""
-  def __init__(self, netid):
+  def __init__(self, netid="", library="ndu50"):
     super(Aleph, self).__init__(netid)
     self.name = "Aleph"
 
     # self.url = "http://aleph2.library.nd.edu:8991"
     self.url = hesutil.getEnv("ALEPH_URL", throw=True)
+    self.alephUrl = self._formatUrl(self.url, hesutil.getEnv("ALEPH_PATH", throw=True)).replace("<<lib>>", library)
 
-    self._setCallback('checkedOut', self.checkedOut)
+    self._setCallback('borrowed', self.borrowed)
     self._setCallback('user', self.userData)
+    self._setCallback('pending', self.pending)
 
 
   def _parseXML(self, xmlStr):
@@ -65,6 +69,13 @@ class Aleph(RequestType):
     return directory.get(zname, {}).get(zname + "-%s" % index, None)
 
 
+  def _formatDueDate(self, dueStr):
+    # '20170531' => 2017-05-31
+    if dueStr and len(dueStr) >= 8:
+      return "%s-%s-%s" % (dueStr[:4], dueStr[4:6], dueStr[6:8])
+    return dueStr
+
+
   def _makeAlephItem(self, alephDir, isHolds = False):
     # no due for holds
     status = self._getZPart(alephDir, 36, "status")
@@ -75,17 +86,33 @@ class Aleph(RequestType):
     elif status == "L":
       status = "Lost"
 
+    if isHolds:
+      status = self._getZPart(alephDir, 37, "status")
+      if not status: # blank = ready for pickup
+        status = "Ready for Pickup until %s" % (self._getZPart(alephDir, 37, "end-hold-date") or 'Unknown Date')
+      elif "In process" in status:
+        status = "In Process"
+      elif "Waiting" in status:
+        status = "Waiting in Queue"
+
+    if not status:
+      status = "No status available"
+
+    dueDate = self._formatDueDate(alephDir.get("due-date"))
+
     item = {
       'title': self._getZPart(alephDir, 13, "title"),
       'author': self._getZPart(alephDir, 13, "author"),
-      'dueDate': alephDir["due-date"],
+      'dueDate': dueDate,
       'published': self._getZPart(alephDir, 13, "imprint"),
       'status': status,
+      'barcode': self._getZPart(alephDir, 30, "barcode"),
     }
 
     if isHolds:
       item["holdDate"] = self._getZPart(alephDir, 37, "hold-date")
-      item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
+      if "Ready for Pickup" in status:
+        item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
 
     return item
 
@@ -93,6 +120,16 @@ class Aleph(RequestType):
   def _format(self, parsed):
     if not parsed:
       return None
+
+    status = self._getZPart(parsed, 305, "bor-status")
+    balance = 0
+    # Students pay fees through Student Accounts - not the Libraries Directly
+    if status not in ['Grad', 'Undergrad']:
+      sign = parsed.get("sign", 'C')
+      balance = float(parsed.get("balance", 0.0))
+      if sign == 'D':
+        balance = -balance
+
     return {
       'name': self._getZPart(parsed, 303, "name"),
       'address1': self._getZPart(parsed, 304, "address-1"),
@@ -100,7 +137,9 @@ class Aleph(RequestType):
       'telephone': self._getZPart(parsed, 304, "telephone"),
       'telephone2': self._getZPart(parsed, 304, "telephone-2"),
       'homeLibrary': self._getZPart(parsed, 303, "home-library"),
-      'status': self._getZPart(parsed, 305, "bor-status"),
+      'status': status,
+      'alephId': self._getZPart(parsed, 304, "id"),
+      'balance': balance,
     }
 
 
@@ -108,44 +147,148 @@ class Aleph(RequestType):
     path = hesutil.getEnv("ALEPH_ITEM_PATH", throw=True)
 
     url = self.url + path.replace("<<doc>>", doc)
+    heslog.info("Requesting document %s" % doc)
     stringResponse = self._makeReq(url, {})
-    return self._parseXML(stringResponse)
+    return untangle.parse(stringResponse)
+
+
+  def query(self, queryString):
+    path = "/X?op=find&base=ndu01pub&request=%s" % queryString
+
+    heslog.info("Running query %s" % queryString)
+    stringResponse = self._makeReq(self.url + path, {})
+    parsed = self._parseXML(stringResponse)
+
+    setNum = parsed.get("set_number")
+    recordCount = int(parsed.get("no_records", 0))
+
+    if setNum and recordCount:
+      heslog.info("Got aleph set %s with %s records" % (setNum, recordCount))
+      path = "/X?op=present&base=ndu01pub&set_number=%s&set_entry=1-%s" % (setNum, recordCount)
+      stringResponse = self._makeReq(self.url + path, {})
+      return untangle.parse(stringResponse)
+    return None
 
 
   def userData(self):
-    path = hesutil.getEnv("ALEPH_PATH", throw=True)
-
     headers = {
       'Content-Type': 'xml',
     }
 
-    url = self._formatUrl(self.url, path)
+    url = self.alephUrl
     stringResponse = self._makeReq(url, headers)
     parsed = self._parseXML(stringResponse)
     return self._format(parsed)
 
 
-  def checkedOut(self):
-    path = hesutil.getEnv("ALEPH_PATH", throw=True)
-    if path is None:
-      return None;
+  def renew(self, barcode):
+    path = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True)
 
+    heslog.info("Renewing item")
+    url = self._formatUrl(self.url, path).replace("<<barcode>>", barcode)
+    stringResponse = self._makeReq(url, {})
+    parsed = self._parseXML(stringResponse)
+    heslog.debug(parsed)
+
+    def status(code, text = None):
+      ret = { "renewStatus": code}
+      if text:
+        ret["statusText"] = text
+      return ret
+
+    # handle aleph errors
+    error = parsed.get("error", "")
+    if "New due date must be bigger than current's loan due date" in error:
+      return status(304)
+    if "can not be found in library" in error or "is not Loaned in library" in error:
+      return status(404)
+    if "has no Local Information" in error or "Item provided is not loaned by given bor_id" in error:
+      return status(500, "Error in user information")
+
+    error = parsed.get("error-text-1")
+    if error:
+      return status(500, error)
+
+    error = parsed.get("error-text-2")
+    if error:
+      return status(500, error)
+
+    ret = status(200)
+    ret["dueDate"] = self._formatDueDate(parsed.get("due-date"))
+    return ret
+
+
+  def updateHomeLibrary(self, newLib):
+    heslog.info("Updating home library to %s" % newLib)
+
+    updateXml = "<?xml version=\"1.0\"?><p-file-20><patron-record><z303><match-id-type>00</match-id-type><match-id>%s</match-id><record-action>A</record-action><z303-home-library>%s</z303-home-library></z303></patron-record></p-file-20>" % (self.netid, newLib)
+
+    url = self.url + '/X'
+    body = hesutil.getEnv("ALEPH_UPDATE_BODY", throw=True) \
+                  .replace("<<username>>", hesutil.getEnv("ALEPH_USER", throw=True)) \
+                  .replace("<<password>>", hesutil.getEnv("ALEPH_PASS", throw=True)) \
+                  .replace("<<reqxml>>", updateXml)
+
+    req = urllib2.Request(url, data=body)
+    req.get_method = lambda: "POST"
+    response = ""
+    try:
+      response = urllib2.urlopen(req)
+    except urllib2.HTTPError as e:
+      heslog.error("%s" % e.code)
+      heslog.error(e.read())
+      return None
+    except urllib2.URLError as e:
+      heslog.error(e.reason)
+      return None
+
+    parsed = self._parseXML(response.read())
+    # <error/> is filled with both actual errors and the success message because that makes sense
+    if "Succeeded to REWRITE table" in parsed.get("error"):
+      return True
+    else:
+      heslog.error(parsed.get("error"))
+      return False
+
+
+  def borrowed(self):
     headers = {
       'Content-Type': 'xml',
     }
 
+    heslog.info("Requesting checked out items")
     test = hestest.get(self.netid)
     if test:
+      heslog.info("Got a test netid")
       stringResponse = test.get("aleph", "")
     else:
-      url = self._formatUrl(self.url, path)
-      stringResponse = self._makeReq(url, headers)
+      stringResponse = self._makeReq(self.alephUrl, headers)
 
     parsed = self._parseXML(stringResponse)
-    # 'holds': [ self._makeAlephItem(i, True) for i in parsed.get('item-h', []) ],
 
     items = parsed.get('item-l', [])
     if type(items) is dict:
       items = [items]
     return [ self._makeAlephItem(i) for i in items ]
+
+
+  def pending(self):
+    headers = {
+      'Content-Type': 'xml',
+    }
+
+    heslog.info("Requesting pending items")
+    test = hestest.get(self.netid)
+    if test:
+      heslog.info("Got a test netid")
+      stringResponse = test.get("aleph", "")
+    else:
+      stringResponse = self._makeReq(self.alephUrl, headers)
+
+    parsed = self._parseXML(stringResponse)
+
+    items = parsed.get('item-h', [])
+    if type(items) is dict:
+      items = [items]
+    return [ self._makeAlephItem(i, True) for i in items ]
 

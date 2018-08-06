@@ -1,0 +1,10 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - ln -s hesburgh_utilities/py hesburgh
+
+  build:
+    commands:
+      - cd deploy && hesdeploy -s dev --publishOnly
