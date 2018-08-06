@@ -31,6 +31,11 @@ Parameters:
 Outputs:
   GatewayId:
     Value: !GetAtt GatewayStack.Outputs.GatewayId
+  RootUrl:
+    Value: !GetAtt GatewayStack.Outputs.RootUrl
+    Export:
+      Name:
+        !Sub ${ServiceName}-api-url
 
 Resources:
   LambdasStack:
