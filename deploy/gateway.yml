@@ -18,6 +18,22 @@ Parameters:
     Type: String
     Description: Arn for the AlephQuery Lambda
 
+Outputs:
+  GatewayId:
+    Value: !Ref Gateway
+  RootUrl:
+    Description: "Root URL of the API gateway"
+    Value:
+      Fn::Join:
+        - ""
+        - - "https://"
+          - !Ref Gateway
+          - ".execute-api."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !Ref Stage
+          - "/"
+
 Resources:
   GatewayStage:
     Type: AWS::ApiGateway::Deployment

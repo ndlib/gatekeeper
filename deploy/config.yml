@@ -4,8 +4,8 @@ Stacks:
   Global:
     Tags:
       Name: $SERVICE-$STAGE
-      Owner: ${USER}
-      Contact: ${USER}@nd.edu
+      Owner: WSE
+      Contact: web-and-software-engineering-group@nd.edu
   Single:
     - Name: $SERVICE-$STAGE
       Template: root.yml
@@ -20,10 +20,8 @@ Stacks:
 Artifacts:
   Templates:
     - root.yml
-    - kms.yml
     - lambdas.yml
     - gateway.yml
-    - roles.yml
   Zips:
     -
       Name: code
@@ -38,7 +36,7 @@ Artifacts:
 
 LambdaEnv:
   Global:
-    KMSKey: alias/$SERVICE-$STAGE
+    KMSKey: alias/wse/kms/
   Single:
     - FunctionName: $SERVICE-$STAGE-aleph
       Environment:
