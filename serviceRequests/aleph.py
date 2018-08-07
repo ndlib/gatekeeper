@@ -99,11 +99,16 @@ class Aleph(RequestType):
       status = "No status available"
 
     dueDate = self._formatDueDate(alephDir.get("due-date"))
-
+    loanDate = self._getZPart(alephDir, 36, "loan-date")
+    loanDate = "%s-%s-%s" % (loanDate[6:10], loanDate[0:2], loanDate[3:5])
+    heslog.info(alephDir)
+    heslog.info(self)
     item = {
+      'loanNumber': self._getZPart(alephDir, 36, "number"),
       'title': self._getZPart(alephDir, 13, "title"),
       'author': self._getZPart(alephDir, 13, "author"),
       'dueDate': dueDate,
+      'loanDate': loanDate,
       'published': self._getZPart(alephDir, 13, "imprint"),
       'status': status,
       'barcode': self._getZPart(alephDir, 30, "barcode"),
@@ -291,4 +296,3 @@ class Aleph(RequestType):
     if type(items) is dict:
       items = [items]
     return [ self._makeAlephItem(i, True) for i in items ]
-

@@ -115,7 +115,6 @@ def getUserCircHistory(event, context):
   params = event.get("headers", {})
   alephId = params.get("aleph-id")
   heslog.addLambdaContext(event, context)
-
   if not alephId:
     heslog.error("No aleph id provided")
     return response.error(400)
