@@ -73,14 +73,10 @@ class AlephOracle(object):
       "volume",
       "edition",
     ]
-    print columns
     outData = []
     for values in self.cursor:
       valueData = {}
-      print values
       for index in xrange(len(columns)):
-        print columns[index]
-        print values[index]
         valueData[columns[index]] = values[index]
       outData.append(valueData)
     return outData
