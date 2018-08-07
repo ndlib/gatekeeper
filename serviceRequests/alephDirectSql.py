@@ -32,30 +32,30 @@ class AlephOracle(object):
 
   def userCircHistory(self, alephID):
     self.cursor.execute("""
-      SELECT
-        z36h_number, z36h_loan_date, z36h_returned_date,
-        z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
-        z30_rec_key, z30_barcode, z30_call_no, z30_description
-      FROM ndu50.z36h
-      LEFT JOIN ndu50.z30 ON z36h_rec_key = z30_rec_key
-      LEFT JOIN ndu01.z103 ON SUBSTR(z30_rec_key,1,9) = SUBSTR(z103_rec_key,6,9)
-      LEFT JOIN ndu01.z13  ON SUBSTR(z103_rec_key_1,6.9) = z13_rec_key
-      WHERE z36h_bor_status != '98'
-      AND z36h_id = :alephID
-      AND SUBSTR(z103_rec_key,1,5) = 'NDU50'
-      UNION
-      SELECT
-        z36_number, z36_loan_date, z36_returned_date,
-        z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
-        z30_rec_key, z30_barcode, z30_call_no, z30_description
-      FROM ndu50.z36
-      LEFT JOIN ndu50.z30 ON z36_rec_key = z30_rec_key
-      LEFT JOIN ndu01.z103 ON SUBSTR(z30_rec_key,1,9) = SUBSTR(z103_rec_key,6,9)
-      LEFT JOIN ndu01.z13  ON SUBSTR(z103_rec_key_1,6.9) = z13_rec_key
-      WHERE z36_bor_status != '98'
-      AND z36_id = :alephID
-      AND SUBSTR(z103_rec_key,1,5) = 'NDU50'
-      """,
+        SELECT
+          z36_number, z36_loan_date, z36_returned_date,
+          z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
+          z30_rec_key, z30_barcode, z30_call_no, z30_description, SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'),4) as z36_edition
+        FROM ndu50.z36
+        LEFT JOIN ndu50.z30 ON z36_rec_key = z30_rec_key
+        LEFT JOIN ndu01.z103 ON SUBSTR(z30_rec_key,1,9) = SUBSTR(z103_rec_key,6,9)
+        LEFT JOIN ndu01.z13  ON SUBSTR(z103_rec_key_1,6.9) = z13_rec_key
+        WHERE z36_bor_status != '98'
+        AND z36_id = :alephID
+        AND SUBSTR(z103_rec_key,1,5) = 'NDU50'
+        UNION
+        SELECT
+          z36h_number, z36h_loan_date, z36h_returned_date,
+          z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
+          z30_rec_key, z30_barcode, z30_call_no, z30_description, SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'), 4) as z36_edition
+        FROM ndu50.z36h
+        LEFT JOIN ndu50.z30 ON z36h_rec_key = z30_rec_key
+        LEFT JOIN ndu01.z103 ON SUBSTR(z30_rec_key,1,9) = SUBSTR(z103_rec_key,6,9)
+        LEFT JOIN ndu01.z13  ON SUBSTR(z103_rec_key_1,6.9) = z13_rec_key
+        WHERE z36h_bor_status != '98'
+        AND z36h_id = :alephID
+        AND SUBSTR(z103_rec_key,1,5) = 'NDU50'
+        """,
       alephID = alephID)
 
     columns = [
@@ -71,11 +71,16 @@ class AlephOracle(object):
       "barcode",
       "call_number",
       "volume",
+      "edition",
     ]
+    print columns
     outData = []
     for values in self.cursor:
       valueData = {}
+      print values
       for index in xrange(len(columns)):
+        print columns[index]
+        print values[index]
         valueData[columns[index]] = values[index]
       outData.append(valueData)
     return outData
