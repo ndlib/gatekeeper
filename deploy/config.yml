@@ -4,8 +4,8 @@ Stacks:
   Global:
     Tags:
       Name: $SERVICE-$STAGE
-      Owner: hbeachey
-      Contact: hbeachey@nd.edu
+      Owner: WSE
+      Contact: web-and-software-engineering-group@nd.edu
   Single:
     - Name: $SERVICE-$STAGE
       Template: root.yml
