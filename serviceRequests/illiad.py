@@ -11,17 +11,38 @@ class Illiad(RequestType):
 
     self._setCallback('borrowed', self.borrowed)
     self._setCallback('pending', self.pending)
-
+    self._setCallback('all', self.all)
 
   def _makeIlliadItem(self, data):
     if data.get("RequestType") == "Loan":
       title = data.get("LoanTitle")
       author = data.get("LoanAuthor")
-      published = data.get("LoanDate")
+      edition = data.get("LoanEdition")
+      publisher = data.get("LoanPublisher")
+      placeOfPublication = data.get("LoanPlace")
+      publicationDate = data.get("LoanDate")
+      journalTitle = ""
+      journalVolume = ""
+      journalIssue = ""
+      journalMonth = ""
+      journalYear = ""
+
+      type = 'loan'
+
     else:
       title = data.get("PhotoArticleTitle")
       author = data.get("PhotoArticleAuthor")
-      published = data.get("PhotoJournalYear")
+      edition = data.get("PhotoItemEdition")
+      publisher = data.get("PhotoItemPublisher")
+      placeOfPublication = data.get("PhotoItemPlace")
+      publicationDate = data.get("PhotoItemDate")
+      journalTitle = data.get("PhotoJournalTitle")
+      journalVolume = data.get("PhotoJournalVolume")
+      journalIssue = data.get("PhotoJournalIssue")
+      journalMonth = data.get("PhotoJournalMonth")
+      journalYear = data.get("PhotoJournalYear")
+
+      type = 'photo'
 
     # 2017-06-28T00:00:00 => 2017-06-28
     dueDate = data.get("DueDate", "")
@@ -29,12 +50,21 @@ class Illiad(RequestType):
       dueDate = dueDate.split("T")[0]
 
     return {
+      "type": type,
       "title": title,
       "author": author,
+      "edition": edition,
+      "publisher": publisher,
+      "placeOfPublication": placeOfPublication,
+      "publicationDate": publicationDate,
+      "journalTitle": journalTitle,
+      "journalVolume": journalVolume,
+      "journalIssue": journalIssue,
+      "journalMonth": journalMonth,
+      "journalYear": journalYear,
       "dueDate": dueDate,
-      "published": published,
+      "lastAccessDate": data.get("TransactionDate", None),
       "status": data.get("TransactionStatus", None),
-
       "transactionNumber": data.get("TransactionNumber", None),
       # pickup location -- in patron record
       # artickles need link to scanned copy
@@ -66,10 +96,12 @@ class Illiad(RequestType):
 
     return self._format(loaded)
 
-
   def borrowed(self):
     return self.checkedOut() + self.web()
 
+  def all(self):
+    path = "<<netid>>?$filter=(TransactionStatus%20ne%20%27Cancelled%20by%20ILL%20Staff%27)"
+    return self._illiad(path, "checkedOut")
 
   def checkedOut(self):
     path = "<<netid>>?$filter=(TransactionStatus%20eq%20%27Checked%20Out%20to%20Customer%27)"

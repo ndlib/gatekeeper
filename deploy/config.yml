@@ -30,6 +30,14 @@ Artifacts:
     - gateway.yml
   Zips:
     -
+      Name: circHistory
+      Files:
+        - ../hesburgh/
+        - ../serviceRequests/
+        - ../testdata/
+        - ../lib/
+        - ../alephQuery.py
+    -
       Name: code
       Files:
         - ../hesburgh/
@@ -63,6 +71,18 @@ LambdaEnv:
         -
           Name: ALEPH_ITEM_PATH
           Value: ${ALEPH_ITEM_PATH}
+
+    - FunctionName: $SERVICE-$STAGE-alephCircHistory
+      Environment:
+        -
+          Name: ALEPH_ORACLE_USER
+          Value: ${ALEPH_ORACLE_USER}
+        -
+          Name: ALEPH_ORACLE_PWD
+          Value: ${ALEPH_ORACLE_PWD}
+        -
+          Name: ALEPH_ORACLE_HOST
+          Value: ${ALEPH_ORACLE_HOST}
 
     - FunctionName: $SERVICE-$STAGE-alephRenew
       Environment:
