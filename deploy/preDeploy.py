@@ -13,7 +13,7 @@ def gitVersion(stage):
 
 def runTests():
   os.environ["CI"] = "Local"
-  output = scriptutil.executeCommand("cd .. && yarn test")
+  output = scriptutil.executeCommand("cd .. &&  python test.py")
   print output.get("code")
   print (output.get("code") == 0)
   return output.get("code") == 0
