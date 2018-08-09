@@ -1,5 +1,8 @@
 Service: gatekeeper
 
+PreDeploy: preDeploy.py
+
+
 Stacks:
   Global:
     Tags:
