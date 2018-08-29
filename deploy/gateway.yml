@@ -32,7 +32,7 @@ Parameters:
   LocationArn:
     Type: String
     Description: Arn for the Location Lambda
-  AuthorizerName:
+  AuthorizerArn:
     Type: String
     Description: The name of the authorizer lambda
 
@@ -57,13 +57,6 @@ Outputs:
           - "/"
 
 Resources:
-  GatewayStage:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn: Gateway
-    Properties:
-      RestApiId: !Ref Gateway
-      StageName: !Ref Stage
-
   Gateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -578,7 +571,7 @@ Resources:
                 requestTemplates:
                   application/json: "{statusCode:200}"
                 passthroughBehavior: "when_no_match"
-                type: "mock"                
+                type: "mock"
           /primo:
             get:
               parameters:
@@ -949,15 +942,7 @@ Resources:
             in: "header"
             x-amazon-apigateway-authtype: "custom"
             x-amazon-apigateway-authorizer:
-              authorizerUri:
-                Fn::Join:
-                  - ":"
-                  - - arn:aws:apigateway
-                    - !Ref AWS::Region
-                    - lambda:path/2015-03-31/functions/arn:aws:lambda
-                    - !Ref AWS::Region
-                    - !Ref AWS::AccountId
-                    - !Sub function:${AuthorizerName}/invocations
+              authorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizerArn}/invocations"
               authorizerResultTtlInSeconds: 300
               type: "token"
         definitions:

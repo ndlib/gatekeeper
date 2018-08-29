@@ -70,4 +70,6 @@ Resources:
         AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
         AlephUpdateArn: !GetAtt LambdasStack.Outputs.AlephUpdateArn
         LocationArn: !GetAtt LambdasStack.Outputs.LocationArn
-        AuthorizerName: !Ref AuthorizerName
+        AuthorizerArn:
+          Fn::ImportValue:
+            !Sub "lambdaauth-${Stage}Arn"
