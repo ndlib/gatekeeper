@@ -15,18 +15,17 @@ Parameters:
     Type: String
     Description: Location of template files
   AlephSecurityGroups:
-    Type: String
+    Type: 'AWS::SSM::Parameter::Value<String>'
     Description: The security group(s) required for aleph
+    Default: '/all/gatekeeper/aleph/securitygroupid'
   AlephSubnets:
-    Type: String
+    Type: 'AWS::SSM::Parameter::Value<String>'
     Description: The subnet(s) required for aleph
-  AuthorizerName:
-    Type: String
-    Description: Name of the lambda authorizer
-    Default: "jwt-auth-prod"
+    Default: '/all/gatekeeper/aleph/subnetid'
   Version:
     Type: String
     Description: The git verison of this deployment
+
 
 Outputs:
   GatewayId:
