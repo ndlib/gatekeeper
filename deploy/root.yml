@@ -26,7 +26,6 @@ Parameters:
     Type: String
     Description: The git verison of this deployment
 
-
 Outputs:
   GatewayId:
     Value: !GetAtt GatewayStack.Outputs.GatewayId
@@ -71,4 +70,4 @@ Resources:
         LocationArn: !GetAtt LambdasStack.Outputs.LocationArn
         AuthorizerArn:
           Fn::ImportValue:
-            !Sub "lambdaauth-${Stage}Arn"
+            !Sub "lambda-auth-${Stage}Arn"
