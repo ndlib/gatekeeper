@@ -80,6 +80,7 @@ class Primo(RequestType):
       "2": "callNumber",
       "S": "availability",
       "O": "recordId",
+      "Z": "subLibraryCode"
     }
 
     validEntries = []
