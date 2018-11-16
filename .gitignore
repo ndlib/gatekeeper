@@ -7,3 +7,4 @@ hesburgh
 node_modules/
 hesburgh_pip_install
 lib
+deploy/deploy_**

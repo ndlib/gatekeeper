@@ -101,6 +101,9 @@ class Aleph(RequestType):
     dueDate = self._formatDueDate(alephDir.get("due-date"))
     loanDate = self._getZPart(alephDir, 36, "loan-date")
     loanDate = "%s-%s-%s" % (loanDate[6:10], loanDate[0:2], loanDate[3:5])
+    identifier = self._getZPart(alephDir, 13, "isbn-issn")
+    identifier = ''.join(ch for ch in identifier.split(" ")[0] if ch.isdigit())
+    identifier_type = "isbn" if self._getZPart(alephDir, 13, "isbn-issn-code") == "020" else "issn"
     heslog.info(alephDir)
     heslog.info(self)
     item = {
@@ -112,6 +115,11 @@ class Aleph(RequestType):
       'published': self._getZPart(alephDir, 13, "imprint"),
       'status': status,
       'barcode': self._getZPart(alephDir, 30, "barcode"),
+      'yearPublished': self._getZPart(alephDir, 13, "year"),
+      'callNumber': self._getZPart(alephDir, 30, "call-no").replace('&nbsp;', ' '),
+      'volume': self._getZPart(alephDir, 30, "description"),
+      'issn': identifier if identifier_type == "issn" else None,
+      'isbn': identifier if identifier_type == "isbn" else None,
     }
 
     if isHolds:

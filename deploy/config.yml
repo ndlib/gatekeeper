@@ -36,6 +36,8 @@ Artifacts:
         - ../testdata/
         - ../lib/
         - ../alephQuery.py
+        - ../serviceHandler.py
+        - ../physicalAvailability.py
     -
       Name: code
       Files:
