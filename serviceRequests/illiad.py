@@ -70,6 +70,7 @@ class Illiad(RequestType):
       "callNumber": data.get("CallNumber", None),
       "issn": data.get("ISSN", None),
       "illNumber": data.get("ILLNumber", None),
+      "documentType": data.get("DocumentType", None),
       # pickup location -- in patron record
       # artickles need link to scanned copy
     }
