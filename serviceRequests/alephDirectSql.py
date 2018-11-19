@@ -33,7 +33,7 @@ class AlephOracle(object):
   def userCircHistory(self, alephID):
     self.cursor.execute("""
         SELECT
-          z36_rec_key, z36_number, z36_loan_date, z36_returned_date, z36_due_date, z36_material,
+          z36_rec_key, z36_number, z36_loan_date, z36_returned_date, z36_due_date, TRIM(z36_material),
           z13_author, z13_title, z13_imprint, z13_year,
           DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '020', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISBN,
           DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '022', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISSN,
