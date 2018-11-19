@@ -37,7 +37,8 @@ class AlephOracle(object):
           z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
           DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '020', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISBN,
           DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '022', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISSN,
-          z30_rec_key, TRIM(z30_barcode), z30_call_no, z30_description, SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'),4) as z36_edition
+          z30_rec_key, TRIM(z30_barcode), TRIM(REGEXP_REPLACE(z30_call_no, '\$\$.', ' ')), z30_description,
+          SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'),4) as z36_edition
         FROM ndu50.z36
         LEFT JOIN ndu50.z30 ON z36_rec_key = z30_rec_key
         LEFT JOIN ndu01.z103 ON SUBSTR(z30_rec_key,1,9) = SUBSTR(z103_rec_key,6,9)
@@ -51,7 +52,8 @@ class AlephOracle(object):
           z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
           DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '020', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISBN,
           DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '022', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISSN,
-          z30_rec_key, TRIM(z30_barcode), z30_call_no, z30_description, SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'), 4) as z36_edition
+          z30_rec_key, TRIM(z30_barcode), TRIM(REGEXP_REPLACE(z30_call_no, '\$\$.', ' ')), z30_description,
+          SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'), 4) as z36_edition
         FROM ndu50.z36h
         LEFT JOIN ndu50.z30 ON z36h_rec_key = z30_rec_key
         LEFT JOIN ndu01.z103 ON SUBSTR(z30_rec_key,1,9) = SUBSTR(z103_rec_key,6,9)
