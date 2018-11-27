@@ -86,7 +86,7 @@ class AlephOracle(object):
       outData.append(valueData)
     return outData
 
-  def userDetails(self, alephID):
+  def userDetails(self, netID):
     self.cursor.execute("""
           SELECT
             TRIM(z303_rec_key) AS ALEPH_ID,
@@ -107,14 +107,17 @@ class AlephOracle(object):
             z305_bor_type,
             TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 3, 3))) AS CAMPUS,
             TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 6))) AS CAMPUS_ID
-          FROM pwd50.z303
+          FROM pwd50.z308 ids
+          LEFT JOIN pwd50.z303 ON TRIM(z303_rec_key) = ids.z308_id
           LEFT JOIN pwd50.z304 ON TRIM(z303_rec_key) = TRIM(SUBSTR(z304_rec_key, 1, 12)) AND z304_address_type = 2
           LEFT JOIN pwd50.z305 ON TRIM(z303_rec_key) = TRIM(SUBSTR(z305_rec_key, 1, 12)) AND SUBSTR(z305_rec_key, 13, 5) = 'ALEPH'
           LEFT JOIN pwd50.z308 a ON TRIM(z303_rec_key) = TRIM(a.z308_id) AND SUBSTR(a.z308_rec_key, 1, 2) = '03'
           LEFT JOIN pwd50.z308 b ON TRIM(z303_rec_key) = TRIM(b.z308_id) AND SUBSTR(b.z308_rec_key, 1, 2) = '01'
-          WHERE TRIM(z303_rec_key) = :alephID
+          WHERE ids.z308_verification_type = '02'
+          AND SUBSTR(ids.z308_rec_key, 1, 2) = '04'
+          AND TRIM(SUBSTR(ids.z308_rec_key, 3)) = UPPER(:netID)
         """,
-      alephID = alephID)
+      netID = netID)
 
     columns = [
       "aleph_id",

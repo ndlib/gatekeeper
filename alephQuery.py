@@ -125,15 +125,14 @@ def getUserCircHistory(event, context):
   return response.success(data)
 
 def getUserDetails(event, context):
-  params = event.get("headers", {})
-  alephId = params.get("aleph-id")
   heslog.addLambdaContext(event, context)
-  if not alephId:
-    heslog.error("No aleph id provided")
+  netId = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
+  if not netId:
+    heslog.error("Invalid token or no token provided")
     return response.error(400)
 
   direct = AlephOracle()
-  data = direct.userDetails(alephId)
+  data = direct.userDetails(netId)
   heslog.info("Returning success")
   return response.success(data)
 

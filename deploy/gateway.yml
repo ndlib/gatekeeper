@@ -374,11 +374,11 @@ Resources:
           /aleph/userDetails:
             get:
               parameters:
-              - name: "aleph-id"
+              - name: "Authorization"
                 in: "header"
                 required: true
                 type: "string"
-                description: "The aleph id of the user to query for"
+                description: "The JWT authorization token."
               responses:
                 "200":
                   description: Details about aleph user
@@ -437,7 +437,7 @@ Resources:
                     responseParameters:
                       method.response.header.Access-Control-Allow-Credentials: "'false'"
                       method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,aleph-id'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
                       method.response.header.Access-Control-Allow-Origin: "'*'"
                 requestTemplates:
                   application/json: "{statusCode:200}"
