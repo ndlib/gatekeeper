@@ -63,9 +63,14 @@ class Illiad(RequestType):
       "journalMonth": journalMonth,
       "journalYear": journalYear,
       "dueDate": dueDate,
-      "lastAccessDate": data.get("TransactionDate", None),
       "status": data.get("TransactionStatus", None),
       "transactionNumber": data.get("TransactionNumber", None),
+      "transactionDate": data.get("TransactionDate", None),
+      "creationDate": data.get("CreationDate", None),
+      "callNumber": data.get("CallNumber", None),
+      "issn": data.get("ISSN", None),
+      "illNumber": data.get("ILLNumber", None),
+      "documentType": data.get("DocumentType", None),
       # pickup location -- in patron record
       # artickles need link to scanned copy
     }

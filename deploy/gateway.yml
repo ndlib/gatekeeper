@@ -306,7 +306,7 @@ Resources:
                 description: "The aleph id of the user to query for"
               responses:
                 "200":
-                  description: Personal Aleph info
+                  description: User Circulation History
                   headers:
                     Access-Control-Allow-Origin:
                       type: "string"
@@ -362,7 +362,7 @@ Resources:
                     responseParameters:
                       method.response.header.Access-Control-Allow-Credentials: "'false'"
                       method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
-                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,aleph-id'"
                       method.response.header.Access-Control-Allow-Origin: "'*'"
                 requestTemplates:
                   application/json: "{statusCode:200}"

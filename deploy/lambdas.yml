@@ -231,7 +231,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${ServiceName}-alephCircHistory
-      Description: Query aleph for a book
+      Description: Query aleph for user's circulation history
       Runtime: python2.7
       Timeout: !Ref AlephCircHistoryTimeout
       MemorySize: !Ref AlephCircHistoryMemorySize
