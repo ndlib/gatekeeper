@@ -45,7 +45,6 @@ Resources:
         ServiceName: !Ref ServiceName
         SourceBucket: !Ref TemplateBucket
         SourceKey: !Sub ${TemplateFolder}/code.zip
-        CircSourceKey: !Sub ${TemplateFolder}/circHistory.zip
         RoleArn: !ImportValue LambdaVPCServiceRole
         AlephSecurityGroups: !Ref AlephSecurityGroups
         AlephSubnets: !Ref AlephSubnets
@@ -64,6 +63,7 @@ Resources:
         IlliadArn: !GetAtt LambdasStack.Outputs.IlliadArn
         PrimoArn: !GetAtt LambdasStack.Outputs.PrimoArn
         AlephCircHistoryArn: !GetAtt LambdasStack.Outputs.AlephCircHistoryArn
+        AlephUserDetailsArn: !GetAtt LambdasStack.Outputs.AlephUserDetailsArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
         AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
         AlephUpdateArn: !GetAtt LambdasStack.Outputs.AlephUpdateArn

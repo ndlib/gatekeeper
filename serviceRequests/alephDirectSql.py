@@ -85,3 +85,61 @@ class AlephOracle(object):
         valueData[columns[index]] = values[index]
       outData.append(valueData)
     return outData
+
+  def userDetails(self, alephID):
+    self.cursor.execute("""
+          SELECT
+            TRIM(z303_rec_key) AS ALEPH_ID,
+            TRIM(z303_name) AS NAME,
+            TRIM(z303_home_library),
+            TRIM(SUBSTR(z304_address, 201, 200)) AS ADDRESS_LINE_1,
+            TRIM(SUBSTR(z304_address, 401, 200)) AS ADDRESS_LINE_2,
+            TRIM(SUBSTR(z304_address, 601, 200)) AS ADDRESS_LINE_3,
+            TRIM(SUBSTR(z304_address, 801, 200)) AS ADDRESS_LINE_4,
+            TRIM(z304_zip),
+            TRIM(z304_email_address),
+            TRIM(z304_telephone),
+            TRIM(z304_telephone_2),
+            z305_open_date,
+            z305_update_date,
+            z305_expiry_date,
+            z305_bor_status,
+            z305_bor_type,
+            TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 3, 3))) AS CAMPUS,
+            TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 6))) AS CAMPUS_ID
+          FROM pwd50.z303
+          LEFT JOIN pwd50.z304 ON TRIM(z303_rec_key) = TRIM(SUBSTR(z304_rec_key, 1, 12)) AND z304_address_type = 2
+          LEFT JOIN pwd50.z305 ON TRIM(z303_rec_key) = TRIM(SUBSTR(z305_rec_key, 1, 12)) AND SUBSTR(z305_rec_key, 13, 5) = 'ALEPH'
+          LEFT JOIN pwd50.z308 a ON TRIM(z303_rec_key) = TRIM(a.z308_id) AND SUBSTR(a.z308_rec_key, 1, 2) = '03'
+          LEFT JOIN pwd50.z308 b ON TRIM(z303_rec_key) = TRIM(b.z308_id) AND SUBSTR(b.z308_rec_key, 1, 2) = '01'
+          WHERE TRIM(z303_rec_key) = :alephID
+        """,
+      alephID = alephID)
+
+    columns = [
+      "aleph_id",
+      "name",
+      "home_library",
+      "address_line_1",
+      "address_line_2",
+      "address_line_3",
+      "address_line_4",
+      "zip",
+      "email_address",
+      "telephone",
+      "telephone2",
+      "open_date",
+      "update_date",
+      "expiry_date",
+      "borrower_status",
+      "borrower_type",
+      "campus",
+      "campus_id",
+    ]
+    outData = []
+    for values in self.cursor:
+      valueData = {}
+      for index in xrange(len(columns)):
+        valueData[columns[index]] = values[index]
+      outData.append(valueData)
+    return outData

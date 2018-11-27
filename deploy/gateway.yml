@@ -23,6 +23,9 @@ Parameters:
   AlephCircHistoryArn:
     Type: String
     Description: Arn for direct circ history query lambda
+  AlephUserDetailsArn:
+    Type: String
+    Description: Arn for direct user query lambda
   AlephRenewArn:
     Type: String
     Description: Arn for the AlephRenew Lambda
@@ -332,6 +335,78 @@ Resources:
                       - !Ref AWS::Region
                       - ":lambda:path/2015-03-31/functions/"
                       - !Ref AlephCircHistoryArn
+                      - "/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+            options:
+              tags:
+              - skipTests
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Credentials:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Credentials: "'false'"
+                      method.response.header.Access-Control-Allow-Methods: "'OPTIONS,GET'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,aleph-id'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{statusCode:200}"
+                passthroughBehavior: "when_no_match"
+                type: "mock"
+          /aleph/userDetails:
+            get:
+              parameters:
+              - name: "aleph-id"
+                in: "header"
+                required: true
+                type: "string"
+                description: "The aleph id of the user to query for"
+              responses:
+                "200":
+                  description: Details about aleph user
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+                  schema:
+                    $ref: '#/definitions/AlephUserDetails'
+                "401":
+                  description: Unauthorized - most often because of invalid token
+                default:
+                  description: Unexpected error
+                  schema:
+                    $ref: '#/definitions/Error'
+              security:
+              - jwt: []
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Join:
+                    - ''
+                    - - "arn:aws:apigateway:"
+                      - !Ref AWS::Region
+                      - ":lambda:path/2015-03-31/functions/"
+                      - !Ref AlephUserDetailsArn
                       - "/invocations"
                 passthroughBehavior: "when_no_match"
                 httpMethod: "POST"
