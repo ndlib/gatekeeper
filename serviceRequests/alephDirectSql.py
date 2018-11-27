@@ -116,6 +116,7 @@ class AlephOracle(object):
           WHERE ids.z308_verification_type = '02'
           AND SUBSTR(ids.z308_rec_key, 1, 2) = '04'
           AND TRIM(SUBSTR(ids.z308_rec_key, 3)) = UPPER(:netID)
+          AND ROWNUM = 1 -- Just in case... Only get 1 result.
         """,
       netID = netID)
 
@@ -139,10 +140,8 @@ class AlephOracle(object):
       "campus",
       "campus_id",
     ]
-    outData = []
+    outData = {}
     for values in self.cursor:
-      valueData = {}
       for index in xrange(len(columns)):
-        valueData[columns[index]] = values[index]
-      outData.append(valueData)
+        outData[columns[index]] = values[index]
     return outData
