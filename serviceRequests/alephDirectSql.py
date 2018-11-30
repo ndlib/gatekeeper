@@ -1,10 +1,13 @@
 import os
 import sys
+import ConfigParser
 from hesburgh import heslog, hesutil
 
 # make sure the library is in the import path so python can find it
 ldPath = os.path.dirname(os.path.realpath(__file__ + "../../")) + '/lib'
 sys.path.append(ldPath)
+
+cfgPath = os.path.dirname(os.path.realpath(__file__ + "../../")) + '/config'
 
 import cx_Oracle
 
@@ -86,7 +89,9 @@ class AlephOracle(object):
       outData.append(valueData)
     return outData
 
-  def userDetails(self, netID):
+  def userInfo(self, netID, library):
+    # NOTE: This query requires library param because it gets a user's balance within a specific library.
+    # It could be adapted to bring back amounts from all libraries, but that would break backwards-compatibility.
     self.cursor.execute("""
           SELECT
             TRIM(z303_rec_key) AS ALEPH_ID,
@@ -104,44 +109,75 @@ class AlephOracle(object):
             z305_update_date,
             z305_expiry_date,
             z305_bor_status,
-            z305_bor_type,
+            UPPER(z305_bor_type),
+            z305_loan_permission,
+            z305_hold_permission,
+            z305_renew_permission,
+            NVL(bal.amount, 0) AS BALANCE,
             TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 3, 3))) AS CAMPUS,
             TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 6))) AS CAMPUS_ID
           FROM pwd50.z308 ids
-          LEFT JOIN pwd50.z303 ON TRIM(z303_rec_key) = ids.z308_id
-          LEFT JOIN pwd50.z304 ON TRIM(z303_rec_key) = TRIM(SUBSTR(z304_rec_key, 1, 12)) AND z304_address_type = 2
-          LEFT JOIN pwd50.z305 ON TRIM(z303_rec_key) = TRIM(SUBSTR(z305_rec_key, 1, 12)) AND SUBSTR(z305_rec_key, 13, 5) = 'ALEPH'
-          LEFT JOIN pwd50.z308 a ON TRIM(z303_rec_key) = TRIM(a.z308_id) AND SUBSTR(a.z308_rec_key, 1, 2) = '03'
-          LEFT JOIN pwd50.z308 b ON TRIM(z303_rec_key) = TRIM(b.z308_id) AND SUBSTR(b.z308_rec_key, 1, 2) = '01'
+            JOIN pwd50.z303 ON TRIM(z303_rec_key) = TRIM(ids.z308_id)
+            LEFT JOIN pwd50.z308 a ON TRIM(a.z308_id) = TRIM(ids.z308_id) AND SUBSTR(a.z308_rec_key, 1, 2) = '03'
+            LEFT JOIN pwd50.z308 b ON TRIM(b.z308_id) = TRIM(ids.z308_id) AND SUBSTR(b.z308_rec_key, 1, 2) = '01'
+            LEFT JOIN pwd50.z304 ON TRIM(SUBSTR(z304_rec_key, 1, 12)) = TRIM(ids.z308_id) AND z304_address_type = 2
+            LEFT JOIN pwd50.z305 ON TRIM(SUBSTR(z305_rec_key, 1, 12)) = TRIM(ids.z308_id) AND SUBSTR(z305_rec_key, 13, 5) = 'ALEPH'
+            LEFT JOIN (
+              SELECT
+                TRIM(SUBSTR(z31_rec_key, 1, 12)) rec_key,
+                SUM(DECODE(
+                  z31_credit_debit,
+                  'C', DECODE(z31_status, 'O', z31_sum/100, 'W', 0, 'C', 0, 'T', z31_sum/100),
+                  'D', -DECODE(z31_status, 'O', z31_sum/100, 'W', 0, 'C', 0, 'T', z31_sum/100),
+                  0
+                )) AS amount
+              FROM """ + library + """.z31
+              GROUP BY SUBSTR(z31_rec_key, 1, 12)
+            ) bal ON TRIM(bal.rec_key) = TRIM(ids.z308_id)
           WHERE ids.z308_verification_type = '02'
-          AND SUBSTR(ids.z308_rec_key, 1, 2) = '04'
-          AND TRIM(SUBSTR(ids.z308_rec_key, 3)) = UPPER(:netID)
-          AND ROWNUM = 1 -- Just in case... Only get 1 result.
+            AND SUBSTR(ids.z308_rec_key, 1, 2) = '04'
+            AND TRIM(SUBSTR(ids.z308_rec_key, 3)) = UPPER(:netID)
         """,
       netID = netID)
 
     columns = [
-      "aleph_id",
+      "alephId",
       "name",
-      "home_library",
-      "address_line_1",
-      "address_line_2",
-      "address_line_3",
-      "address_line_4",
+      "homeLibraryCode",
+      "address1",
+      "address2",
+      "address3",
+      "address4",
       "zip",
-      "email_address",
+      "emailAddress",
       "telephone",
       "telephone2",
-      "open_date",
-      "update_date",
-      "expiry_date",
-      "borrower_status",
-      "borrower_type",
+      "openDate",
+      "updateDate",
+      "expiryDate",
+      "borrowerStatusCode",
+      "borrowerTypeCode",
+      "loanPermission",
+      "holdPermission",
+      "renewPermission",
+      "balance",
       "campus",
-      "campus_id",
+      "campusId",
     ]
     outData = {}
     for values in self.cursor:
       for index in xrange(len(columns)):
-        outData[columns[index]] = values[index]
+        # convert Y/N flag columns to booleans for easier consumption
+        if columns[index] in ['loanPermission', 'holdPermission', 'renewPermission']:
+          outData[columns[index]] = (values[index] == 'Y')
+        else:
+          outData[columns[index]] = values[index]
+
+    # map codes to descriptions and save them as separate fields
+    config = ConfigParser.ConfigParser()
+    config.read(cfgPath + '/aleph_mappings.cfg')
+    outData['homeLibrary'] = config.get('HOMELIBRARY', outData['homeLibraryCode'])
+    outData['status'] = config.get('BORSTATUS', outData['borrowerStatusCode'])
+    outData['type'] = config.get('BORTYPE', outData['borrowerTypeCode'])
+
     return outData

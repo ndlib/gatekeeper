@@ -63,7 +63,7 @@ Resources:
         IlliadArn: !GetAtt LambdasStack.Outputs.IlliadArn
         PrimoArn: !GetAtt LambdasStack.Outputs.PrimoArn
         AlephCircHistoryArn: !GetAtt LambdasStack.Outputs.AlephCircHistoryArn
-        AlephUserDetailsArn: !GetAtt LambdasStack.Outputs.AlephUserDetailsArn
+        AlephUserInfoArn: !GetAtt LambdasStack.Outputs.AlephUserInfoArn
         AlephQueryArn: !GetAtt LambdasStack.Outputs.AlephQueryArn
         AlephRenewArn: !GetAtt LambdasStack.Outputs.AlephRenewArn
         AlephUpdateArn: !GetAtt LambdasStack.Outputs.AlephUpdateArn

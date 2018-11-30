@@ -16,7 +16,6 @@ class Aleph(RequestType):
     self.alephUrl = self._formatUrl(self.url, hesutil.getEnv("ALEPH_PATH", throw=True)).replace("<<lib>>", library)
 
     self._setCallback('borrowed', self.borrowed)
-    self._setCallback('user', self.userData)
     self._setCallback('pending', self.pending)
 
 
@@ -182,17 +181,6 @@ class Aleph(RequestType):
       stringResponse = self._makeReq(self.url + path, {})
       return untangle.parse(stringResponse)
     return None
-
-
-  def userData(self):
-    headers = {
-      'Content-Type': 'xml',
-    }
-
-    url = self.alephUrl
-    stringResponse = self._makeReq(url, headers)
-    parsed = self._parseXML(stringResponse)
-    return self._format(parsed)
 
 
   def renew(self, barcode):

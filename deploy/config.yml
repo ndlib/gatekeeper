@@ -28,19 +28,9 @@ Artifacts:
     - lambdas.yml
     - gateway.yml
   Zips:
-    -
-      Name: circHistory
+    - Name: code
       Files:
-        - ../hesburgh/
-        - ../serviceRequests/
-        - ../testdata/
-        - ../lib/
-        - ../alephQuery.py
-        - ../serviceHandler.py
-        - ../physicalAvailability.py
-    -
-      Name: code
-      Files:
+        - ../config/
         - ../hesburgh/
         - ../serviceRequests/
         - ../testdata/
@@ -86,7 +76,7 @@ LambdaEnv:
           Name: ALEPH_ORACLE_HOST
           Value: ${ALEPH_ORACLE_HOST}
 
-    - FunctionName: $SERVICE-$STAGE-alephUserDetails
+    - FunctionName: $SERVICE-$STAGE-alephUserInfo
       Environment:
         -
           Name: ALEPH_ORACLE_USER
