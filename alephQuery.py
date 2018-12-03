@@ -124,6 +124,32 @@ def getUserCircHistory(event, context):
   heslog.info("Returning success")
   return response.success(data)
 
+def getUserInfo(event, context):
+  queryParams = event.get("queryStringParameters") or {}
+  library = queryParams.get("library")
+  netId = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
+
+  heslog.addLambdaContext(event, context)
+
+  if netId is None:
+    heslog.error("Invalid token or no token provided")
+    return response.error(400)
+
+  if library is None:
+    heslog.info("No library specified, using ndu50")
+    library = "ndu50"
+
+  # Validate library value supplied against list of accepted values...
+  # This allows us to return an intelligent error and prevents SQL injection.
+  if library.lower() not in ['ndu50', 'smc50', 'hcc50', 'bci50']:
+    heslog.error("Invalid library code provided.")
+    return response.error(400)
+
+  direct = AlephOracle()
+  data = direct.userInfo(netId, library)
+  heslog.info("Returning success")
+  return response.success(data)
+
 
 def updateUser(event, context):
   params = event.get("headers", {})

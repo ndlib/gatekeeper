@@ -23,6 +23,9 @@ Parameters:
   AlephCircHistoryArn:
     Type: String
     Description: Arn for direct circ history query lambda
+  AlephUserInfoArn:
+    Type: String
+    Description: Arn for direct user query lambda
   AlephRenewArn:
     Type: String
     Description: Arn for the AlephRenew Lambda
@@ -224,6 +227,11 @@ Resources:
           /aleph/user:
             get:
               parameters:
+              - name: "Authorization"
+                in: "header"
+                required: true
+                type: "string"
+                description: "The JWT authorization token."
               - name: "library"
                 in: "query"
                 required: false
@@ -259,7 +267,7 @@ Resources:
                     - - "arn:aws:apigateway:"
                       - !Ref AWS::Region
                       - ":lambda:path/2015-03-31/functions/"
-                      - !Ref AlephArn
+                      - !Ref AlephUserInfoArn
                       - "/invocations"
                 passthroughBehavior: "when_no_match"
                 httpMethod: "POST"

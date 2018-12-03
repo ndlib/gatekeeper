@@ -17,9 +17,6 @@ Parameters:
   SourceKey:
     Type: String
     Description: The path to the code zip
-  CircSourceKey:
-    Type: String
-    Description: The path to the code zip
   AlephSecurityGroups:
     Type: CommaDelimitedList
     Description: The security group(s) required for aleph
@@ -49,6 +46,17 @@ Parameters:
     MaxValue: 300
     Default: 30
   AlephCircHistoryMemorySize:
+    Type: Number
+    Description: MB
+    AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
+    Default: 256
+  AlephUserInfoTimeout:
+    Type: Number
+    Description: seconds
+    MinValue: 1
+    MaxValue: 300
+    Default: 30
+  AlephUserInfoMemorySize:
     Type: Number
     Description: MB
     AllowedValues: [128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472, 1536]
@@ -132,6 +140,12 @@ Outputs:
     Value: !GetAtt AlephCircHistory.Arn
   AlephCircHistoryLogs:
     Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephCircHistoryLogs}
+
+  AlephUserInfoArn:
+    Description: AlephUserInfo lambda arn
+    Value: !GetAtt AlephUserInfo.Arn
+  AlephUserInfoLogs:
+    Value: !Sub https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#logStream:group=${AlephUserInfoLogs}
 
   AlephRenewArn:
     Description: AlephRenew lambda arn
@@ -239,7 +253,7 @@ Resources:
       Role: !Ref RoleArn
       Code:
         S3Bucket: !Ref SourceBucket
-        S3Key: !Ref CircSourceKey
+        S3Key: !Ref SourceKey
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
@@ -257,6 +271,38 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${AlephCircHistory}
+      RetentionInDays: !Ref LogRetention
+
+  AlephUserInfo:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${ServiceName}-alephUserInfo
+      Description: Query aleph for info on user
+      Runtime: python2.7
+      Timeout: !Ref AlephUserInfoTimeout
+      MemorySize: !Ref AlephUserInfoMemorySize
+      Handler: alephQuery.getUserInfo
+      Role: !Ref RoleArn
+      Code:
+        S3Bucket: !Ref SourceBucket
+        S3Key: !Ref SourceKey
+      VpcConfig:
+        SecurityGroupIds: !Ref AlephSecurityGroups
+        SubnetIds: !Ref AlephSubnets
+      Environment:
+        Variables:
+          VERSION: !Ref Version
+  AlephUserInfoPermission:
+    DependsOn: AlephUserInfo
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt AlephUserInfo.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+  AlephUserInfoLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AlephUserInfo}
       RetentionInDays: !Ref LogRetention
 
   AlephRenew:

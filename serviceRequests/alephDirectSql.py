@@ -1,10 +1,13 @@
 import os
 import sys
+import ConfigParser
 from hesburgh import heslog, hesutil
 
 # make sure the library is in the import path so python can find it
 ldPath = os.path.dirname(os.path.realpath(__file__ + "../../")) + '/lib'
 sys.path.append(ldPath)
+
+cfgPath = os.path.dirname(os.path.realpath(__file__ + "../../")) + '/config'
 
 import cx_Oracle
 
@@ -84,4 +87,97 @@ class AlephOracle(object):
       for index in xrange(len(columns)):
         valueData[columns[index]] = values[index]
       outData.append(valueData)
+    return outData
+
+  def userInfo(self, netID, library):
+    # NOTE: This query requires library param because it gets a user's balance within a specific library.
+    # It could be adapted to bring back amounts from all libraries, but that would break backwards-compatibility.
+    self.cursor.execute("""
+          SELECT
+            TRIM(z303_rec_key) AS ALEPH_ID,
+            TRIM(z303_name) AS NAME,
+            TRIM(z303_home_library),
+            TRIM(SUBSTR(z304_address, 201, 200)) AS ADDRESS_LINE_1,
+            TRIM(SUBSTR(z304_address, 401, 200)) AS ADDRESS_LINE_2,
+            TRIM(SUBSTR(z304_address, 601, 200)) AS ADDRESS_LINE_3,
+            TRIM(SUBSTR(z304_address, 801, 200)) AS ADDRESS_LINE_4,
+            TRIM(z304_zip),
+            TRIM(z304_email_address),
+            TRIM(z304_telephone),
+            TRIM(z304_telephone_2),
+            z305_open_date,
+            z305_update_date,
+            z305_expiry_date,
+            z305_bor_status,
+            UPPER(z305_bor_type),
+            z305_loan_permission,
+            z305_hold_permission,
+            z305_renew_permission,
+            NVL(bal.amount, 0) AS BALANCE,
+            TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 3, 3))) AS CAMPUS,
+            TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 6))) AS CAMPUS_ID
+          FROM pwd50.z308 ids
+            JOIN pwd50.z303 ON TRIM(z303_rec_key) = TRIM(ids.z308_id)
+            LEFT JOIN pwd50.z308 a ON TRIM(a.z308_id) = TRIM(ids.z308_id) AND SUBSTR(a.z308_rec_key, 1, 2) = '03'
+            LEFT JOIN pwd50.z308 b ON TRIM(b.z308_id) = TRIM(ids.z308_id) AND SUBSTR(b.z308_rec_key, 1, 2) = '01'
+            LEFT JOIN pwd50.z304 ON TRIM(SUBSTR(z304_rec_key, 1, 12)) = TRIM(ids.z308_id) AND z304_address_type = 2
+            LEFT JOIN pwd50.z305 ON TRIM(SUBSTR(z305_rec_key, 1, 12)) = TRIM(ids.z308_id) AND SUBSTR(z305_rec_key, 13, 5) = 'ALEPH'
+            LEFT JOIN (
+              SELECT
+                TRIM(SUBSTR(z31_rec_key, 1, 12)) rec_key,
+                SUM(DECODE(
+                  z31_credit_debit,
+                  'C', DECODE(z31_status, 'O', z31_sum/100, 'W', 0, 'C', 0, 'T', z31_sum/100),
+                  'D', -DECODE(z31_status, 'O', z31_sum/100, 'W', 0, 'C', 0, 'T', z31_sum/100),
+                  0
+                )) AS amount
+              FROM """ + library + """.z31
+              GROUP BY SUBSTR(z31_rec_key, 1, 12)
+            ) bal ON TRIM(bal.rec_key) = TRIM(ids.z308_id)
+          WHERE ids.z308_verification_type = '02'
+            AND SUBSTR(ids.z308_rec_key, 1, 2) = '04'
+            AND TRIM(SUBSTR(ids.z308_rec_key, 3)) = UPPER(:netID)
+        """,
+      netID = netID)
+
+    columns = [
+      "alephId",
+      "name",
+      "homeLibraryCode",
+      "address1",
+      "address2",
+      "address3",
+      "address4",
+      "zip",
+      "emailAddress",
+      "telephone",
+      "telephone2",
+      "openDate",
+      "updateDate",
+      "expiryDate",
+      "borrowerStatusCode",
+      "borrowerTypeCode",
+      "loanPermission",
+      "holdPermission",
+      "renewPermission",
+      "balance",
+      "campus",
+      "campusId",
+    ]
+    outData = {}
+    for values in self.cursor:
+      for index in xrange(len(columns)):
+        # convert Y/N flag columns to booleans for easier consumption
+        if columns[index] in ['loanPermission', 'holdPermission', 'renewPermission']:
+          outData[columns[index]] = (values[index] == 'Y')
+        else:
+          outData[columns[index]] = values[index]
+
+    # map codes to descriptions and save them as separate fields
+    config = ConfigParser.ConfigParser()
+    config.read(cfgPath + '/aleph_mappings.cfg')
+    outData['homeLibrary'] = config.get('HOMELIBRARY', outData['homeLibraryCode'])
+    outData['status'] = config.get('BORSTATUS', outData['borrowerStatusCode'])
+    outData['type'] = config.get('BORTYPE', outData['borrowerTypeCode'])
+
     return outData
