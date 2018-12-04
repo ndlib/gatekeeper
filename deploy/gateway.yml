@@ -982,13 +982,17 @@ Resources:
           AlephCircItem:
             type: object
             properties:
+              bib_number:
+                type: string
               loan_number:
                 type: number
               loan_date:
                 type: string
-              returned:
+              return_date:
                 type: number
-              bib_number:
+              due_date:
+                type: number
+              material:
                 type: string
               author:
                 type: string
@@ -998,13 +1002,17 @@ Resources:
                 type: string
               year_published:
                 type: number
-              item_number:
+              isbn:
+                type: string
+              issn:
                 type: string
               barcode:
                 type: string
               call_number:
                 type: string
               volume:
+                type: string
+              edition:
                 type: string
           AlephQueryInfo:
             type: object
