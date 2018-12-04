@@ -108,6 +108,7 @@ class Aleph(RequestType):
     item = {
       'material': self._getZPart(alephDir, 36, "material"),
       'loanNumber': self._getZPart(alephDir, 36, "number"),
+      'docNumber': self._getZPart(alephDir, 36, "doc-number"),
       'title': self._getZPart(alephDir, 13, "title"),
       'author': self._getZPart(alephDir, 13, "author"),
       'dueDate': dueDate,
