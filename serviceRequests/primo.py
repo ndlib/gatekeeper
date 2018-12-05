@@ -76,7 +76,7 @@ class Primo(RequestType):
     availFieldsMap = {
       "I": "institution",
       "L": "library",
-      "1": "subLibrary",
+      "1": "collection",
       "2": "callNumber",
       "S": "availability",
       "O": "recordId",
