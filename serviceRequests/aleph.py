@@ -103,6 +103,10 @@ class Aleph(RequestType):
     identifier = self._getZPart(alephDir, 13, "isbn-issn")
     identifier = ''.join(ch for ch in identifier.split(" ")[0] if ch.isdigit())
     identifier_type = "isbn" if self._getZPart(alephDir, 13, "isbn-issn-code") == "020" else "issn"
+    callNumber = self._getZPart(alephDir, 30, "call-no")
+    if callNumber:
+        callNumber = callNumber.replace('&nbsp;', ' ')
+
     heslog.info(alephDir)
     heslog.info(self)
     item = {
@@ -117,7 +121,7 @@ class Aleph(RequestType):
       'status': status,
       'barcode': self._getZPart(alephDir, 30, "barcode"),
       'yearPublished': self._getZPart(alephDir, 13, "year"),
-      'callNumber': self._getZPart(alephDir, 30, "call-no").replace('&nbsp;', ' '),
+      'callNumber': callNumber,
       'volume': self._getZPart(alephDir, 30, "description"),
       'issn': identifier if identifier_type == "issn" else None,
       'isbn': identifier if identifier_type == "isbn" else None,
