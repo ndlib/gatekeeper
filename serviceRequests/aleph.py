@@ -105,7 +105,7 @@ class Aleph(RequestType):
     identifier_type = "isbn" if self._getZPart(alephDir, 13, "isbn-issn-code") == "020" else "issn"
     callNumber = self._getZPart(alephDir, 30, "call-no")
     if callNumber:
-        callNumber = callNumber..replace('&nbsp;', ' ')
+        callNumber = callNumber.replace('&nbsp;', ' ')
 
     heslog.info(alephDir)
     heslog.info(self)
