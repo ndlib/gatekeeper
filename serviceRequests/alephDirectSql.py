@@ -34,33 +34,36 @@ class AlephOracle(object):
 
 
   def userCircHistory(self, alephID):
-    self.cursor.execute("""
+    sql = """
+      SELECT
+        z36.*,
+        z13_author, z13_title, z13_imprint, z13_year,
+        DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '020', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISBN,
+        DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '022', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISSN,
+        TRIM(z30_barcode), TRIM(REGEXP_REPLACE(z30_call_no, '\$\$.', ' ')), TRIM(z30_description),
+        SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'),4) AS edition,
+        SUBSTR(z103_rec_key,1,3) AS institution
+      FROM (
         SELECT
-          z36.*,
-          z13_author, z13_title, z13_imprint, z13_year,
-          DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '020', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISBN,
-          DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '022', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISSN,
-          TRIM(z30_barcode), TRIM(REGEXP_REPLACE(z30_call_no, '\$\$.', ' ')), TRIM(z30_description),
-          SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'),4) AS edition
-        FROM (
-          SELECT
-            z36_rec_key, z36_number, z36_loan_date, z36_returned_date, z36_due_date, TRIM(z36_material)
-          FROM ndu50.z36
-          WHERE z36_bor_status != '98'
-            AND z36_id = :alephID
-          UNION
-          SELECT
-            z36h_rec_key, z36h_number, z36h_loan_date, z36h_returned_date, z36h_due_date, TRIM(z36h_material)
-          FROM ndu50.z36h
-          WHERE z36h_bor_status != '98'
-            AND z36h_id = :alephID
-        ) z36
-        LEFT JOIN ndu50.z30 ON z30_rec_key = z36.z36_rec_key
-        LEFT JOIN ndu01.z13 ON z13_rec_key = SUBSTR(z30_rec_key,1,9)
-        LEFT JOIN ndu01.z103 ON SUBSTR(z103_rec_key,6,9) = SUBSTR(z30_rec_key,1,9)
-        WHERE SUBSTR(z103_rec_key,1,5) = 'NDU50'
-        """,
-      alephID = alephID)
+          z36_rec_key, z36_number, z36_loan_date, z36_returned_date, z36_due_date, TRIM(z36_material)
+        FROM <schema>.z36
+        WHERE z36_bor_status != '98'
+          AND z36_id = :alephID
+        UNION
+        SELECT
+          z36h_rec_key, z36h_number, z36h_loan_date, z36h_returned_date, z36h_due_date, TRIM(z36h_material)
+        FROM <schema>.z36h
+        WHERE z36h_bor_status != '98'
+          AND z36h_id = :alephID
+      ) z36
+      LEFT JOIN <schema>.z30 ON z30_rec_key = z36.z36_rec_key
+      LEFT JOIN ndu01.z13 ON z13_rec_key = SUBSTR(z30_rec_key,1,9)
+      LEFT JOIN ndu01.z103 ON SUBSTR(z103_rec_key,6,9) = SUBSTR(z30_rec_key,1,9)
+      WHERE SUBSTR(z103_rec_key,1,5) = '<schema>'
+    """
+    query = sql.replace('<schema>', 'NDU50')
+    query += ' UNION ALL ' + sql.replace('<schema>', 'HCC50')
+    self.cursor.execute(query, alephID = alephID)
 
     columns = [
       "bib_number",
@@ -79,6 +82,7 @@ class AlephOracle(object):
       "call_number",
       "volume",
       "edition",
+      "institution",
     ]
     outData = []
     for values in self.cursor:
