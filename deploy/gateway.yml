@@ -747,6 +747,12 @@ Resources:
                 required: true
                 type: "string"
                 description: "The alephId of the user doing the renewal"
+              - name: "library"
+                in: "query"
+                required: false
+                type: "string"
+                description: "The library id to query (defaults to ndu)"
+                enum: [ndu50, hcc50, bci50, smc50]
               responses:
                 '200':
                   description: 'Item successfully renewed'

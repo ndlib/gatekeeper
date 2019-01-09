@@ -188,9 +188,9 @@ class Aleph(RequestType):
     return None
 
 
-  def renew(self, barcode):
-    path = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True)
-
+  def renew(self, barcode, library = "ndu50"):
+    path = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True).replace("<<lib>>", library)
+    
     heslog.info("Renewing item")
     url = self._formatUrl(self.url, path).replace("<<barcode>>", barcode)
     stringResponse = self._makeReq(url, {})
