@@ -13,7 +13,6 @@ class Aleph(RequestType):
 
     # self.url = "http://aleph2.library.nd.edu:8991"
     self.url = hesutil.getEnv("ALEPH_URL", throw=True)
-    self.alephRenew = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True).replace("<<lib>>", library)
     self.alephUrl = self._formatUrl(self.url, hesutil.getEnv("ALEPH_PATH", throw=True)).replace("<<lib>>", library)
 
     self._setCallback('borrowed', self.borrowed)
@@ -189,9 +188,11 @@ class Aleph(RequestType):
     return None
 
 
-  def renew(self, barcode):
+  def renew(self, barcode, library = "ndu50"):
+    path = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True).replace("<<lib>>", library)
+    
     heslog.info("Renewing item")
-    url = self._formatUrl(self.url, self.alephRenew).replace("<<barcode>>", barcode)
+    url = self._formatUrl(self.url, path).replace("<<barcode>>", barcode)
     stringResponse = self._makeReq(url, {})
     parsed = self._parseXML(stringResponse)
     heslog.debug(parsed)

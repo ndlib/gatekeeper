@@ -95,6 +95,17 @@ def renewItem(event, context):
   barcode = params.get("barcode")
   heslog.addLambdaContext(event, context, barcode=barcode)
 
+  queryParams = event.get("queryStringParameters") or {}
+  library = queryParams.get("library")
+
+  if library is None:
+    heslog.info("No library specified, using ndu50")
+    library = "ndu50"
+
+  if library.lower() not in ['ndu50', 'smc50', 'hcc50', 'bci50']:
+    heslog.error("Invalid library code provided.")
+    return response.error(400)
+
   alephId = params.get("aleph-id")
 
   if not barcode:
@@ -106,7 +117,7 @@ def renewItem(event, context):
     return response.error(400)
 
   aleph = Aleph(alephId)
-  renewData = aleph.renew(barcode)
+  renewData = aleph.renew(barcode, library)
   heslog.info("Returning %s" % renewData)
   return response.success(renewData)
 
