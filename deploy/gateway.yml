@@ -1045,6 +1045,8 @@ Resources:
                 type: string
               access:
                 type: string
+              accessNotes:
+                type: string
               includes:
                 type: string
               platform:
