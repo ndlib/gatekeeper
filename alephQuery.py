@@ -67,8 +67,15 @@ def findItem(event, context):
         accessValue = accessValue.strip(punctuation) \
                       .replace("Online access with authorization", "Notre Dame faculty, staff, and students") \
                       .replace("Access restricted to subscribers", "Notre Dame faculty, staff, and students") \
+                      .replace("Restricted to subscribing institutions", "Notre Dame faculty, staff, and students") \
+                      .replace("Subscription required for access", "Notre Dame faculty, staff, and students") \
+                      .replace("Restricted to users with valid Notre Dame NetIDs", "Notre Dame faculty, staff, and students") \
                       .replace("Unrestricted online access", "Public")
         outData["access"] = xml.appendDataStr(outData, "access", accessValue)
+
+  # Additional notes about access. Unlike the above field, this is not validated against any list of expected values.
+  notesValue = xml.fromRecord(record, 538, subfield="a")
+  outData["accessNotes"] = None if (notesValue and "World Wide Web" in notesValue) else notesValue
 
   # includes
   for inc in xml.iterateOnRecord(record, 740, i2=2):
