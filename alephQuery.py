@@ -74,7 +74,8 @@ def findItem(event, context):
         outData["access"] = xml.appendDataStr(outData, "access", accessValue)
 
   # Additional notes about access. Unlike the above field, this is not validated against any list of expected values.
-  outData["accessNotes"] = xml.fromRecord(record, 538, subfield="a")
+  notesValue = xml.fromRecord(record, 538, subfield="a")
+  outData["accessNotes"] = None if (notesValue and "World Wide Web" in notesValue) else notesValue
 
   # includes
   for inc in xml.iterateOnRecord(record, 740, i2=2):
