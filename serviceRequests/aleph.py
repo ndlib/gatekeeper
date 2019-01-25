@@ -99,7 +99,8 @@ class Aleph(RequestType):
 
     dueDate = self._formatDueDate(alephDir.get("due-date"))
     loanDate = self._getZPart(alephDir, 36, "loan-date")
-    loanDate = "%s-%s-%s" % (loanDate[6:10], loanDate[0:2], loanDate[3:5])
+    if loanDate:
+      loanDate = "%s-%s-%s" % (loanDate[6:10], loanDate[0:2], loanDate[3:5])
     identifier = self._getZPart(alephDir, 13, "isbn-issn")
     identifier = ''.join(ch for ch in identifier.split(" ")[0] if ch.isdigit())
     identifier_type = "isbn" if self._getZPart(alephDir, 13, "isbn-issn-code") == "020" else "issn"
@@ -131,6 +132,10 @@ class Aleph(RequestType):
       item["holdDate"] = self._getZPart(alephDir, 37, "hold-date")
       if "Ready for Pickup" in status:
         item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
+      item["docNumber"] = self._getZPart(alephDir, 37, "doc-number")
+      item["material"] = self._getZPart(alephDir, 30, "material")
+      if item["material"]:
+        item["material"] = item["material"].upper()
 
     return item
 
@@ -190,7 +195,7 @@ class Aleph(RequestType):
 
   def renew(self, barcode, library = "ndu50"):
     path = hesutil.getEnv("ALEPH_RENEW_PATH", throw=True).replace("<<lib>>", library)
-    
+
     heslog.info("Renewing item")
     url = self._formatUrl(self.url, path).replace("<<barcode>>", barcode)
     stringResponse = self._makeReq(url, {})
