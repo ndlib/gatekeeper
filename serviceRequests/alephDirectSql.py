@@ -174,13 +174,16 @@ class AlephOracle(object):
         if columns[index] in ['loanPermission', 'holdPermission', 'renewPermission']:
           outData[columns[index]] = (values[index] == 'Y')
         else:
-          outData[columns[index]] = values[index]
+          outData[columns[index]] = values[index] if values[index] else '' # Disallow nulls. Return empty string.
 
     # map codes to descriptions and save them as separate fields
     config = ConfigParser.ConfigParser()
     config.read(cfgPath + '/aleph_mappings.cfg')
-    outData['homeLibrary'] = config.get('HOMELIBRARY', outData['homeLibraryCode'])
-    outData['status'] = config.get('BORSTATUS', outData['borrowerStatusCode'])
-    outData['type'] = config.get('BORTYPE', outData['borrowerTypeCode'])
+    if (config.has_option('HOMELIBRARY', outData['homeLibraryCode'])):
+      outData['homeLibrary'] = config.get('HOMELIBRARY', outData['homeLibraryCode'])
+    if (config.has_option('BORSTATUS', outData['borrowerStatusCode'])):
+      outData['status'] = config.get('BORSTATUS', outData['borrowerStatusCode'])
+    if (config.has_option('BORTYPE', outData['borrowerTypeCode'])):
+      outData['type'] = config.get('BORTYPE', outData['borrowerTypeCode'])
 
     return outData
