@@ -46,23 +46,23 @@ class AlephOracle(object):
       FROM (
         SELECT
           z36_rec_key, z36_number, z36_loan_date, z36_returned_date, z36_due_date, TRIM(z36_material)
-        FROM <schema>.z36
+        FROM <inst>50.z36
         WHERE z36_bor_status != '98'
           AND z36_id = :alephID
         UNION
         SELECT
           z36h_rec_key, z36h_number, z36h_loan_date, z36h_returned_date, z36h_due_date, TRIM(z36h_material)
-        FROM <schema>.z36h
+        FROM <inst>50.z36h
         WHERE z36h_bor_status != '98'
           AND z36h_id = :alephID
       ) z36
-      LEFT JOIN <schema>.z30 ON z30_rec_key = z36.z36_rec_key
-      LEFT JOIN ndu01.z13 ON z13_rec_key = SUBSTR(z30_rec_key,1,9)
-      LEFT JOIN ndu01.z103 ON SUBSTR(z103_rec_key,6,9) = SUBSTR(z30_rec_key,1,9)
-      WHERE SUBSTR(z103_rec_key,1,5) = '<schema>'
+      LEFT JOIN <inst>50.z30 ON z30_rec_key = z36.z36_rec_key
+      LEFT JOIN <inst>01.z103 ON z103_lkr_doc_number = SUBSTR(z30_rec_key,1,9)
+      LEFT JOIN <inst>01.z13 ON z13_rec_key = SUBSTR(z103_rec_key_1,6,9)
+      WHERE SUBSTR(z103_rec_key,1,5) = '<inst>50' AND SUBSTR(z103_rec_key_1,1,5) = '<inst>01' AND z103_lkr_library = '<inst>50'
     """
-    query = sql.replace('<schema>', 'NDU50')
-    query += ' UNION ALL ' + sql.replace('<schema>', 'HCC50')
+    query = sql.replace('<inst>', 'NDU')
+    query += ' UNION ALL ' + sql.replace('<inst>', 'HCC')
     self.cursor.execute(query, alephID = alephID)
 
     columns = [
