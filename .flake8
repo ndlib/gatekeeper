@@ -1,0 +1,4 @@
+[flake8]
+exclude = .git,example,pnx,mellon_input_directory
+max-line-length = 119
+max-complexity = 10
