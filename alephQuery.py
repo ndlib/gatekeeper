@@ -59,6 +59,16 @@ def findItem(event, context):
     })
   outData["urls"] = urls
 
+  # same format as urls, but goes into its own field since its use is different
+  relatedResources = []
+  for related in xml.iterateOnRecord(record, 856, 4, 2):
+    relatedResources.append({
+      "url": xml.fromRecord(related, subfield="u"),
+      "title": xml.fromRecord(related, subfield=3),
+      "notes": xml.fromRecord(related, subfield="z"),
+    })
+  outData["relatedResources"] = relatedResources
+
   # access data
   for letter in ['f', 'a', 'c']:
     for a in xml.iterateOnRecord(record, 506):
