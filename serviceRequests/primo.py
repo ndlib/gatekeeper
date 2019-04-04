@@ -98,6 +98,9 @@ class Primo(RequestType):
           if match[0] in availFieldsMap:
             entry[availFieldsMap[match[0]]] = match[1]
 
+        if not hasattr(entry, 'recordId'):
+          entry['recordId'] = record.PrimoNMBib.record.control.recordid.cdata.strip()
+
         validEntries.append(entry)
 
     return validEntries
