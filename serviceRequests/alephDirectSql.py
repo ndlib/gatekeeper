@@ -130,8 +130,8 @@ class AlephOracle(object):
                 TRIM(SUBSTR(z31_rec_key, 1, 12)) rec_key,
                 SUM(DECODE(
                   z31_credit_debit,
-                  'C', DECODE(z31_status, 'O', z31_sum/100, 'W', 0, 'C', 0, 'T', z31_sum/100),
-                  'D', -DECODE(z31_status, 'O', z31_sum/100, 'W', 0, 'C', 0, 'T', z31_sum/100),
+                  'C', (CASE WHEN z31_status = 'O' THEN z31_sum/100 ELSE 0 END),
+                  'D', -(CASE WHEN z31_status = 'O' THEN z31_sum/100 ELSE 0 END),
                   0
                 )) AS amount
               FROM """ + library + """.z31
