@@ -37,7 +37,7 @@ class AlephOracle(object):
     sql = """
       SELECT
         z36.*,
-        z13_author, z13_title, z13_imprint, z13_year,
+        z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
         DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '020', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISBN,
         DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '022', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISSN,
         TRIM(z30_barcode), TRIM(REGEXP_REPLACE(z30_call_no, '\$\$.', ' ')), TRIM(z30_description),
@@ -66,12 +66,13 @@ class AlephOracle(object):
     self.cursor.execute(query, alephID = alephID)
 
     columns = [
-      "bib_number",
+      "adm_number",
       "loan_number",
       "loan_date",
       "return_date",
       "due_date",
       "material",
+      "bib_number",
       "author",
       "title",
       "publisher",
