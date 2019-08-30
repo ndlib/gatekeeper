@@ -113,7 +113,7 @@ class Aleph(RequestType):
     item = {
       'material': self._getZPart(alephDir, 36, "material"),
       'loanNumber': self._getZPart(alephDir, 36, "number"),
-      'docNumber': self._getZPart(alephDir, 36, "doc-number"),
+      'docNumber': self._getZPart(alephDir, 13, "doc-number").rjust(9, '0'),
       'title': self._getZPart(alephDir, 13, "title"),
       'author': self._getZPart(alephDir, 13, "author"),
       'dueDate': dueDate,
@@ -132,7 +132,6 @@ class Aleph(RequestType):
       item["holdDate"] = self._getZPart(alephDir, 37, "hold-date")
       if "Ready for Pickup" in status:
         item["pickupLocation"] = self._getZPart(alephDir, 37, "pickup-location")
-      item["docNumber"] = self._getZPart(alephDir, 37, "doc-number")
       item["material"] = self._getZPart(alephDir, 30, "material")
       if item["material"]:
         item["material"] = item["material"].upper()
