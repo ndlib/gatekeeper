@@ -19,6 +19,7 @@ class AlephOracle(object):
     user = hesutil.getEnv("ALEPH_ORACLE_USER", throw=True)
     pwd = hesutil.getEnv("ALEPH_ORACLE_PWD", throw=True)
     host = hesutil.getEnv("ALEPH_ORACLE_HOST", throw=True)
+    sid = hesutil.getEnv("ALEPH_ORACLE_SID", throw=True)
 
     # oracle requires the machine name must be the same as the hosts file entry for 127.0.0.1
     # this is used by the client to create a unique id to connect to the db with
@@ -29,7 +30,7 @@ class AlephOracle(object):
     f.close()
     os.environ['HOSTALIASES'] = '/tmp/HOSTALIASES'
 
-    self.connection = cx_Oracle.connect(user, pwd, host + "/ALEPH22")
+    self.connection = cx_Oracle.connect(user, pwd, host + "/" + sid)
     self.cursor = self.connection.cursor()
 
 
