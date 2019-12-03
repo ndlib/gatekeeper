@@ -75,6 +75,9 @@ LambdaEnv:
         -
           Name: ALEPH_ORACLE_HOST
           Value: ${ALEPH_ORACLE_HOST}
+        -
+          Name: ALEPH_ORACLE_SID
+          Value: ${ALEPH_ORACLE_SID}
 
     - FunctionName: $SERVICE-$STAGE-alephUserInfo
       Environment:
@@ -87,6 +90,9 @@ LambdaEnv:
         -
           Name: ALEPH_ORACLE_HOST
           Value: ${ALEPH_ORACLE_HOST}
+        -
+          Name: ALEPH_ORACLE_SID
+          Value: ${ALEPH_ORACLE_SID}
 
     - FunctionName: $SERVICE-$STAGE-alephRenew
       Environment:
