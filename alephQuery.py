@@ -175,6 +175,10 @@ def getUserInfo(event, context):
 
   direct = AlephOracle()
   data = direct.userInfo(netId, library)
+  if data is None:
+    heslog.error("No aleph account found for netid " + netId)
+    return response.error(404)
+
   heslog.info("Returning success")
   return response.success(data)
 
