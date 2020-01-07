@@ -178,6 +178,10 @@ class AlephOracle(object):
         else:
           outData[columns[index]] = values[index] if values[index] else '' # Disallow nulls. Return empty string.
 
+    # if we didn't find an aleph account for the netid, don't bother continuing.
+    if 'alephId' not in outData:
+      return None
+
     # map codes to descriptions and save them as separate fields
     config = ConfigParser.ConfigParser()
     config.read(cfgPath + '/aleph_mappings.cfg')
