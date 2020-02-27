@@ -1,7 +1,11 @@
 from hesburgh import heslog
 import urllib2
+import socket
 
 class RequestType(object):
+  MAX_RETRIES = 2
+  URL_TIMEOUT = 8 #  seconds
+
   def __init__(self, netid):
     super(RequestType, self).__init__()
     self.netid = netid
@@ -14,18 +18,29 @@ class RequestType(object):
     return base + path.replace("<<netid>>", self.netid)
 
 
-  def _makeReq(self, url, headers):
+  def _makeReq(self, url, headers, retryCount=0):
     req = urllib2.Request(url, None, headers)
     response = ""
     try:
-      response = urllib2.urlopen(req)
+      response = urllib2.urlopen(req, timeout=self.URL_TIMEOUT)
     except urllib2.HTTPError as e:
       heslog.error("%s" % e.code)
       heslog.error(e.read())
       return None
     except urllib2.URLError as e:
-      heslog.error(e.reason)
-      return None
+      if isinstance(e.reason, socket.timeout) and retryCount < self.MAX_RETRIES:
+        heslog.info('Request timed out. Retrying.')
+        return self._makeReq(url, headers, retryCount + 1)
+      else:
+        heslog.error(e.reason)
+        return None
+    except socket.timeout as e:
+      if retryCount < 2:
+        heslog.info('Request timed out. Retrying.')
+        return self._makeReq(url, headers, retryCount + 1)
+      else:
+        heslog.error(e.reason)
+        return None
 
     return response.read()
 
