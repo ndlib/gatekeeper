@@ -35,7 +35,7 @@ class RequestType(object):
         heslog.error(e.reason)
         return None
     except socket.timeout as e:
-      if retryCount < 2:
+      if retryCount < self.MAX_RETRIES:
         heslog.info('Request timed out. Retrying.')
         return self._makeReq(url, headers, retryCount + 1)
       else:
