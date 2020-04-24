@@ -34,7 +34,24 @@ class AlephOracle(object):
     self.cursor = self.connection.cursor()
 
 
-  def userCircHistory(self, alephID):
+  def userCircHistory(self, netID):
+    # First get their aleph id. It's quicker and easier to do this in its own query
+    alephID = None
+    query = """
+      SELECT TRIM(z308_id) netid
+      FROM pwd50.z308
+      WHERE z308_verification_type = '02'
+        AND SUBSTR(z308_rec_key, 1, 2) = '04'
+        AND TRIM(SUBSTR(z308_rec_key, 3)) = UPPER(:netID)
+    """
+    self.cursor.execute(query, netID = netID)
+    for values in self.cursor:
+      alephID = values[0]
+
+    # if we didn't find an aleph account for the netid, don't bother continuing.
+    if alephID is None:
+      return None
+
     sql = """
       SELECT
         z36.*,
