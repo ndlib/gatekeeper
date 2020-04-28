@@ -140,28 +140,52 @@ def renewItem(event, context):
 
 
 def getUserCircHistory(event, context):
-  params = event.get("headers", {})
-  alephId = params.get("aleph-id")
   heslog.addLambdaContext(event, context)
-  if not alephId:
-    heslog.error("No aleph id provided")
-    return response.error(400)
+
+  queryParams = event.get("queryStringParameters") or {}
+  netId = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
+
+  if netId is None:
+    clientId = event.get("requestContext", {}).get("authorizer", {}).get("clientid", None)
+    authorizedClients = hesutil.getEnv("AUTHORIZED_CLIENTS", throw=True).split(',')
+
+    if clientId is None:
+      heslog.error("Invalid token or no token provided")
+      return response.error(400)
+    elif clientId not in authorizedClients:
+      heslog.error("Okta client " + clientId + " is not authorized to perform this action.")
+      return response.error(401)
+    else:
+      netId = queryParams.get("netid") or ""
 
   direct = AlephOracle()
-  data = direct.userCircHistory(alephId)
+  data = direct.userCircHistory(netId)
+  if data is None:
+    heslog.error("No aleph account found for netid " + netId)
+    return response.error(404)
+
   heslog.info("Returning success")
   return response.success(data)
 
 def getUserInfo(event, context):
+  heslog.addLambdaContext(event, context)
+
   queryParams = event.get("queryStringParameters") or {}
   library = queryParams.get("library")
   netId = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
 
-  heslog.addLambdaContext(event, context)
-
   if netId is None:
-    heslog.error("Invalid token or no token provided")
-    return response.error(400)
+    clientId = event.get("requestContext", {}).get("authorizer", {}).get("clientid", None)
+    authorizedClients = hesutil.getEnv("AUTHORIZED_CLIENTS", throw=True).split(',')
+
+    if clientId is None:
+      heslog.error("Invalid token or no token provided")
+      return response.error(400)
+    elif clientId not in authorizedClients:
+      heslog.error("Okta client " + clientId + " is not authorized to perform this action.")
+      return response.error(401)
+    else:
+      netId = queryParams.get("netid")
 
   if library is None:
     heslog.info("No library specified, using ndu50")

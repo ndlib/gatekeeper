@@ -307,11 +307,16 @@ Resources:
           /aleph/circhistory:
             get:
               parameters:
-              - name: "aleph-id"
+              - name: "Authorization"
                 in: "header"
                 required: true
                 type: "string"
-                description: "The aleph id of the user to query for"
+                description: "The JWT authorization token."
+              - name: "netid"
+                in: "query"
+                required: true
+                type: "string"
+                description: "The net id of the user to query for"
               responses:
                 "200":
                   description: User Circulation History

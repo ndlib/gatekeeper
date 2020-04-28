@@ -17,8 +17,17 @@ def aleph(event, context):
   heslog.addLambdaContext(event, context, fn="aleph", requestType=requestType)
 
   if netid is None:
-    heslog.error("no netid")
-    return response.error(401)
+    clientId = event.get("requestContext", {}).get("authorizer", {}).get("clientid", None)
+    authorizedClients = hesutil.getEnv("AUTHORIZED_CLIENTS", throw=True).split(',')
+
+    if clientId is None:
+      heslog.error("Invalid token or no token provided")
+      return response.error(400)
+    elif clientId not in authorizedClients:
+      heslog.error("Okta client " + clientId + " is not authorized to perform this action.")
+      return response.error(401)
+    else:
+      netid = queryParams.get("netid")
 
   if requestType is None:
     heslog.error("no query type specified")
@@ -39,13 +48,23 @@ def aleph(event, context):
 def illiad(event, context):
   path = event.get("path")
   requestType = path.split('/')[-1]
+  queryParams = event.get("queryStringParameters") or {}
   netid = event.get("requestContext", {}).get("authorizer", {}).get("netid", None)
 
   heslog.addLambdaContext(event, context, fn="illiad", requestType=requestType)
 
   if netid is None:
-    heslog.error("no netid")
-    return response.error(401)
+    clientId = event.get("requestContext", {}).get("authorizer", {}).get("clientid", None)
+    authorizedClients = hesutil.getEnv("AUTHORIZED_CLIENTS", throw=True).split(',')
+
+    if clientId is None:
+      heslog.error("Invalid token or no token provided")
+      return response.error(400)
+    elif clientId not in authorizedClients:
+      heslog.error("Okta client " + clientId + " is not authorized to perform this action.")
+      return response.error(401)
+    else:
+      netid = queryParams.get("netid")
 
   if requestType is None:
     heslog.error("no query type specified")

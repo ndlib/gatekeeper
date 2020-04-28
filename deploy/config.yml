@@ -51,6 +51,9 @@ LambdaEnv:
         -
           Name: ALEPH_URL
           Value: ${ALEPH_URL}
+        -
+          Name: AUTHORIZED_CLIENTS
+          Value: ${AUTHORIZED_CLIENTS}
 
     - FunctionName: $SERVICE-$STAGE-alephQuery
       Environment:
@@ -63,6 +66,9 @@ LambdaEnv:
         -
           Name: ALEPH_ITEM_PATH
           Value: ${ALEPH_ITEM_PATH}
+        -
+          Name: AUTHORIZED_CLIENTS
+          Value: ${AUTHORIZED_CLIENTS}
 
     - FunctionName: $SERVICE-$STAGE-alephCircHistory
       Environment:
@@ -78,6 +84,9 @@ LambdaEnv:
         -
           Name: ALEPH_ORACLE_SID
           Value: ${ALEPH_ORACLE_SID}
+        -
+          Name: AUTHORIZED_CLIENTS
+          Value: ${AUTHORIZED_CLIENTS}
 
     - FunctionName: $SERVICE-$STAGE-alephUserInfo
       Environment:
@@ -93,6 +102,9 @@ LambdaEnv:
         -
           Name: ALEPH_ORACLE_SID
           Value: ${ALEPH_ORACLE_SID}
+        -
+          Name: AUTHORIZED_CLIENTS
+          Value: ${AUTHORIZED_CLIENTS}
 
     - FunctionName: $SERVICE-$STAGE-alephRenew
       Environment:
@@ -108,6 +120,9 @@ LambdaEnv:
         -
           Name: ALEPH_RENEW_PATH
           Value: ${ALEPH_RENEW_PATH}
+        -
+          Name: AUTHORIZED_CLIENTS
+          Value: ${AUTHORIZED_CLIENTS}
 
     - FunctionName: $SERVICE-$STAGE-alephUpdate
       Environment:
@@ -129,6 +144,9 @@ LambdaEnv:
         -
           Name: ALEPH_PASS
           Value: ${ALEPH_PASS}
+        -
+          Name: AUTHORIZED_CLIENTS
+          Value: ${AUTHORIZED_CLIENTS}
 
     - FunctionName: $SERVICE-$STAGE-illiad
       Environment:
@@ -138,6 +156,9 @@ LambdaEnv:
         -
           Name: ILLIAD_URL
           Value: ${ILLIAD_URL}
+        -
+          Name: AUTHORIZED_CLIENTS
+          Value: ${AUTHORIZED_CLIENTS}
 
     - FunctionName: $SERVICE-$STAGE-primo
       Environment:
