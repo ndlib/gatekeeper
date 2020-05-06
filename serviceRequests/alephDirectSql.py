@@ -38,7 +38,7 @@ class AlephOracle(object):
     # First get their aleph id. It's quicker and easier to do this in its own query
     alephID = None
     query = """
-      SELECT TRIM(z308_id) netid
+      SELECT TRIM(z308_id) alephId
       FROM pwd50.z308
       WHERE z308_verification_type = '02'
         AND SUBSTR(z308_rec_key, 1, 2) = '04'
