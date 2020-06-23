@@ -1125,3 +1125,21 @@ Resources:
             type: array
             items:
               $ref: '#/definitions/Location'
+
+  GatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref Gateway
+
+  GatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref Gateway
+      DeploymentId: !Ref GatewayDeployment
+      StageName: !Ref Stage
+      MethodSettings:
+        - DataTraceEnabled: false
+          HttpMethod: "*"
+          LoggingLevel: ERROR
+          ResourcePath: "/*"
+          MetricsEnabled: true
