@@ -35,53 +35,19 @@ class AlephOracle(object):
 
 
   def userCircHistory(self, netID):
-    # First get their aleph id. It's quicker and easier to do this in its own query
-    alephID = None
     query = """
-      SELECT TRIM(z308_id) alephId
-      FROM pwd50.z308
-      WHERE z308_verification_type = '02'
-        AND SUBSTR(z308_rec_key, 1, 2) = '04'
-        AND TRIM(SUBSTR(z308_rec_key, 3)) = UPPER(:netID)
+      SELECT
+        z36_rec_key, z36_number, z36_loan_date, z36_returned_date, z36_due_date, z36_material,
+        z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
+        isbn,
+        issn,
+        z30_barcode, z30_call_no, z30_description,
+        edition,
+        institution
+      FROM ndrep.circ_history_mv
+      WHERE netid = UPPER(:netID)
     """
     self.cursor.execute(query, netID = netID)
-    for values in self.cursor:
-      alephID = values[0]
-
-    # if we didn't find an aleph account for the netid, don't bother continuing.
-    if alephID is None:
-      return None
-
-    sql = """
-      SELECT
-        z36.*,
-        z13_rec_key, z13_author, z13_title, z13_imprint, z13_year,
-        DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '020', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISBN,
-        DECODE(SUBSTR(z13_isbn_issn_code, 0, 3), '022', REGEXP_REPLACE(z13_isbn_issn, '[^0-9]+', ''), NULL) ISSN,
-        TRIM(z30_barcode), TRIM(REGEXP_REPLACE(z30_call_no, '\$\$.', ' ')), TRIM(z30_description),
-        SUBSTR((SELECT z00r_text FROM ndu01.z00r WHERE z00r_doc_number = z13_rec_key AND z00r_field_code = '250'),4) AS edition,
-        SUBSTR(z103_rec_key,1,3) AS institution
-      FROM (
-        SELECT
-          z36_rec_key, z36_number, z36_loan_date, z36_returned_date, z36_due_date, TRIM(z36_material)
-        FROM <inst>50.z36
-        WHERE z36_bor_status != '98'
-          AND TRIM(z36_id) = :alephID
-        UNION
-        SELECT
-          z36h_rec_key, z36h_number, z36h_loan_date, z36h_returned_date, z36h_due_date, TRIM(z36h_material)
-        FROM <inst>50.z36h
-        WHERE z36h_bor_status != '98'
-          AND TRIM(z36h_id) = :alephID
-      ) z36
-      LEFT JOIN <inst>50.z30 ON z30_rec_key = z36.z36_rec_key
-      LEFT JOIN <inst>01.z103 ON z103_lkr_doc_number = SUBSTR(z30_rec_key,1,9)
-      LEFT JOIN <inst>01.z13 ON z13_rec_key = SUBSTR(z103_rec_key_1,6,9)
-      WHERE SUBSTR(z103_rec_key,1,5) = '<inst>50' AND SUBSTR(z103_rec_key_1,1,5) = '<inst>01' AND z103_lkr_library = '<inst>50'
-    """
-    query = sql.replace('<inst>', 'NDU')
-    query += ' UNION ALL ' + sql.replace('<inst>', 'HCC')
-    self.cursor.execute(query, alephID = alephID)
 
     columns = [
       "adm_number",
@@ -116,49 +82,30 @@ class AlephOracle(object):
     # It could be adapted to bring back amounts from all libraries, but that would break backwards-compatibility.
     self.cursor.execute("""
           SELECT
-            TRIM(z303_rec_key) AS ALEPH_ID,
-            TRIM(z303_name) AS NAME,
-            TRIM(z303_home_library),
-            TRIM(SUBSTR(z304_address, 201, 200)) AS ADDRESS_LINE_1,
-            TRIM(SUBSTR(z304_address, 401, 200)) AS ADDRESS_LINE_2,
-            TRIM(SUBSTR(z304_address, 601, 200)) AS ADDRESS_LINE_3,
-            TRIM(SUBSTR(z304_address, 801, 200)) AS ADDRESS_LINE_4,
-            TRIM(z304_zip),
-            TRIM(z304_email_address),
-            TRIM(z304_telephone),
-            TRIM(z304_telephone_2),
-            z305_open_date,
-            z305_update_date,
-            z305_expiry_date,
-            z305_bor_status,
-            UPPER(z305_bor_type),
-            z305_loan_permission,
-            z305_hold_permission,
-            z305_renew_permission,
-            NVL(bal.amount, 0) AS BALANCE,
-            TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 3, 3))) AS CAMPUS,
-            TRIM(DECODE(a.z308_rec_key, NULL, SUBSTR(b.z308_rec_key, 3), SUBSTR(a.z308_rec_key, 6))) AS CAMPUS_ID
-          FROM pwd50.z308 ids
-            JOIN pwd50.z303 ON TRIM(z303_rec_key) = TRIM(ids.z308_id)
-            LEFT JOIN pwd50.z308 a ON TRIM(a.z308_id) = TRIM(ids.z308_id) AND SUBSTR(a.z308_rec_key, 1, 2) = '03'
-            LEFT JOIN pwd50.z308 b ON TRIM(b.z308_id) = TRIM(ids.z308_id) AND SUBSTR(b.z308_rec_key, 1, 2) = '01'
-            LEFT JOIN pwd50.z304 ON TRIM(SUBSTR(z304_rec_key, 1, 12)) = TRIM(ids.z308_id) AND z304_address_type = 2
-            LEFT JOIN pwd50.z305 ON TRIM(SUBSTR(z305_rec_key, 1, 12)) = TRIM(ids.z308_id) AND SUBSTR(z305_rec_key, 13, 5) = 'ALEPH'
-            LEFT JOIN (
-              SELECT
-                TRIM(SUBSTR(z31_rec_key, 1, 12)) rec_key,
-                SUM(DECODE(
-                  z31_credit_debit,
-                  'C', (CASE WHEN z31_status = 'O' THEN z31_sum/100 ELSE 0 END),
-                  'D', -(CASE WHEN z31_status = 'O' THEN z31_sum/100 ELSE 0 END),
-                  0
-                )) AS amount
-              FROM """ + library + """.z31
-              GROUP BY SUBSTR(z31_rec_key, 1, 12)
-            ) bal ON TRIM(bal.rec_key) = TRIM(ids.z308_id)
-          WHERE ids.z308_verification_type = '02'
-            AND SUBSTR(ids.z308_rec_key, 1, 2) = '04'
-            AND TRIM(SUBSTR(ids.z308_rec_key, 3)) = UPPER(:netID)
+            aleph_id,
+            patron_name,
+            home_library,
+            local_address_line_1,
+            local_address_line_2,
+            local_address_line_3,
+            local_address_line_4,
+            local_address_zip,
+            local_email_address,
+            local_address_telephone,
+            local_address_telephone_2,
+            open_date,
+            last_update_date,
+            expiry_date,
+            bor_status,
+            bor_type,
+            loan_permission,
+            hold_permission,
+            renew_permission,
+            nd_balance + hc_balance AS balance,
+            SUBSTR(campus_id, 1, 3) AS campus,
+            SUBSTR(campus_id, 4) AS campus_id
+          FROM ndrep.patron_mv
+          WHERE netid = UPPER(:netID)
         """,
       netID = netID)
 
