@@ -225,9 +225,6 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
-      Environment:
-        Variables:
-          VERSION: !Ref Version
   AlephQueryPermission:
     DependsOn: AlephQuery
     Type: AWS::Lambda::Permission
@@ -257,9 +254,6 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
-      Environment:
-        Variables:
-          VERSION: !Ref Version
   AlephCircHistoryPermission:
     DependsOn: AlephCircHistory
     Type: AWS::Lambda::Permission
@@ -289,9 +283,6 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
-      Environment:
-        Variables:
-          VERSION: !Ref Version
   AlephUserInfoPermission:
     DependsOn: AlephUserInfo
     Type: AWS::Lambda::Permission
@@ -321,9 +312,6 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
-      Environment:
-        Variables:
-          VERSION: !Ref Version
   AlephRenewPermission:
     DependsOn: AlephRenew
     Type: AWS::Lambda::Permission
@@ -353,9 +341,6 @@ Resources:
       VpcConfig:
         SecurityGroupIds: !Ref AlephSecurityGroups
         SubnetIds: !Ref AlephSubnets
-      Environment:
-        Variables:
-          VERSION: !Ref Version
   AlephUpdatePermission:
     DependsOn: AlephUpdate
     Type: AWS::Lambda::Permission

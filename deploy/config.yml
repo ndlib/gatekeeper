@@ -54,6 +54,9 @@ LambdaEnv:
         -
           Name: AUTHORIZED_CLIENTS
           Value: ${AUTHORIZED_CLIENTS}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-alephQuery
       Environment:
@@ -69,6 +72,9 @@ LambdaEnv:
         -
           Name: AUTHORIZED_CLIENTS
           Value: ${AUTHORIZED_CLIENTS}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-alephCircHistory
       Environment:
@@ -87,6 +93,9 @@ LambdaEnv:
         -
           Name: AUTHORIZED_CLIENTS
           Value: ${AUTHORIZED_CLIENTS}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-alephUserInfo
       Environment:
@@ -105,6 +114,9 @@ LambdaEnv:
         -
           Name: AUTHORIZED_CLIENTS
           Value: ${AUTHORIZED_CLIENTS}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-alephRenew
       Environment:
@@ -123,6 +135,9 @@ LambdaEnv:
         -
           Name: AUTHORIZED_CLIENTS
           Value: ${AUTHORIZED_CLIENTS}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-alephUpdate
       Environment:
@@ -147,6 +162,9 @@ LambdaEnv:
         -
           Name: AUTHORIZED_CLIENTS
           Value: ${AUTHORIZED_CLIENTS}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-illiad
       Environment:
@@ -159,6 +177,9 @@ LambdaEnv:
         -
           Name: AUTHORIZED_CLIENTS
           Value: ${AUTHORIZED_CLIENTS}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-primo
       Environment:
@@ -168,6 +189,9 @@ LambdaEnv:
         -
           Name: PRIMO_DISPLAY_URL
           Value: ${PRIMO_DISPLAY_URL}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
 
     - FunctionName: $SERVICE-$STAGE-location
       Environment:
@@ -186,3 +210,6 @@ LambdaEnv:
         -
           Name: PRIMO_SEARCH
           Value: ${PRIMO_SEARCH}
+        -
+          Name: VERSION
+          Value: ${GIT_VERSION}
